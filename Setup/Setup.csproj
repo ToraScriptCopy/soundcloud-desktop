@@ -31,6 +31,14 @@
       <Link>sc-icon.png</Link>
     </Resource>
     <EmbeddedResource Include="payload\app.zip" Condition="Exists('payload\app.zip')" />
+    <EmbeddedResource Include="$(NuGetPackageRoot)wpf-ui\4.3.0\lib\net472\Wpf.Ui.dll">
+      <Link>lib\Wpf.Ui.dll</Link>
+      <LogicalName>Setup.lib.Wpf.Ui.dll</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(NuGetPackageRoot)wpf-ui.abstractions\4.3.0\lib\net472\Wpf.Ui.Abstractions.dll">
+      <Link>lib\Wpf.Ui.Abstractions.dll</Link>
+      <LogicalName>Setup.lib.Wpf.Ui.Abstractions.dll</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

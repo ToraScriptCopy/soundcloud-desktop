@@ -22,7 +22,6 @@ namespace WpfApp1
         [DataMember] public bool TrayHide { get; set; }
         [DataMember] public bool Autostart { get; set; }
         [DataMember] public bool AdBlockOn { get; set; }
-        [DataMember] public bool AdStrict { get; set; }
         [DataMember] public int HotPrev { get; set; }
         [DataMember] public int HotPlay { get; set; }
         [DataMember] public int HotNext { get; set; }
@@ -42,7 +41,6 @@ namespace WpfApp1
             TrayHide = true;
             Autostart = false;
             AdBlockOn = true;
-            AdStrict = false;
             HotPrev = 0x61;
             HotPlay = 0x62;
             HotNext = 0x63;

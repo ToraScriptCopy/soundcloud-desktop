@@ -26,9 +26,13 @@ namespace WpfApp1
             Loaded += delegate
             {
                 Opacity = 0;
-                BeginAnimation(OpacityProperty,
-                    new System.Windows.Media.Animation.DoubleAnimation(
-                        0, 1, new Duration(TimeSpan.FromMilliseconds(250))));
+                var fade = new System.Windows.Media.Animation.DoubleAnimation(
+                    0, 1, new Duration(TimeSpan.FromMilliseconds(320)));
+                fade.EasingFunction = new System.Windows.Media.Animation.CubicEase
+                {
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+                };
+                BeginAnimation(OpacityProperty, fade);
             };
             Loaded += PipWindow_Loaded;
         }

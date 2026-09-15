@@ -48,11 +48,8 @@
                                  Checked="TrayHideSwitch_Changed" Unchecked="TrayHideSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="AutostartSwitch" Margin="0,6,0,0"
                                  Checked="AutostartSwitch_Changed" Unchecked="AutostartSwitch_Changed"/>
-                <ui:ToggleSwitch x:Name="AdBlockSwitch" Margin="0,6,0,0"
+                <ui:ToggleSwitch x:Name="AdBlockSwitch" Margin="0,6,0,14"
                                  Checked="AdBlockSwitch_Changed" Unchecked="AdBlockSwitch_Changed"/>
-                <ui:ToggleSwitch x:Name="StrictSwitch" Margin="0,6,0,0"
-                                 Checked="StrictSwitch_Changed" Unchecked="StrictSwitch_Changed"/>
-                <TextBlock x:Name="StrictHint" Margin="2,4,0,14" FontSize="11" Opacity="0.6" TextWrapping="Wrap"/>
 
                 <TextBlock x:Name="BindsHeader" Margin="2,0,0,6" FontSize="11" Opacity="0.6" FontWeight="SemiBold"/>
                 <Grid Margin="0,0,0,2">

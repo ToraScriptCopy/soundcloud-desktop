@@ -20,9 +20,13 @@ namespace WpfApp1
             Loaded += delegate
             {
                 Opacity = 0;
-                BeginAnimation(OpacityProperty,
-                    new System.Windows.Media.Animation.DoubleAnimation(
-                        0, 1, new Duration(TimeSpan.FromMilliseconds(250))));
+                var fade = new System.Windows.Media.Animation.DoubleAnimation(
+                    0, 1, new Duration(TimeSpan.FromMilliseconds(320)));
+                fade.EasingFunction = new System.Windows.Media.Animation.CubicEase
+                {
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+                };
+                BeginAnimation(OpacityProperty, fade);
             };
         }
         private void RefreshFromState()
@@ -37,7 +41,6 @@ namespace WpfApp1
             TrayHideSwitch.IsChecked = _state.TrayHide;
             AutostartSwitch.IsChecked = _state.Autostart;
             AdBlockSwitch.IsChecked = _state.AdBlockOn;
-            StrictSwitch.IsChecked = _state.AdStrict;
             Loc.FillKeyCombo(HotPrevBox, _state.HotPrev);
             Loc.FillKeyCombo(HotPlayBox, _state.HotPlay);
             Loc.FillKeyCombo(HotNextBox, _state.HotNext);
@@ -94,8 +97,6 @@ namespace WpfApp1
             TrayHideSwitch.Content = Loc.Get("TrayHide");
             AutostartSwitch.Content = Loc.Get("Autostart");
             AdBlockSwitch.Content = Loc.Get("AdBlockLbl");
-            StrictSwitch.Content = Loc.Get("StrictBlock");
-            StrictHint.Text = Loc.Get("StrictHint");
             BindsHeader.Text = Loc.Get("BindsGroup");
             HotPrevLbl.Text = Loc.Get("HotPrev");
             HotPlayLbl.Text = Loc.Get("HotPlay");
@@ -155,13 +156,6 @@ namespace WpfApp1
             if (!_initialized) return;
             _state.AdBlockOn = AdBlockSwitch.IsChecked == true;
             AdBlock.Enabled = _state.AdBlockOn;
-            _owner.SaveAllState();
-        }
-        private void StrictSwitch_Changed(object sender, RoutedEventArgs e)
-        {
-            if (!_initialized) return;
-            _state.AdStrict = StrictSwitch.IsChecked == true;
-            AdBlock.Strict = _state.AdStrict;
             _owner.SaveAllState();
         }
         private void HotBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

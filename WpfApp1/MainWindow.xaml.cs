@@ -74,6 +74,7 @@ window.__scPipUpdate(location.href);})()";
         private AppState _state;
         private PipWindow _pip;
         private string _pipUrl = "";
+        private CoreWebView2Environment _env;
         private SettingsWindow _settingsWin;
         private double _lastVolume = 0.8;
         private IntPtr _hwnd = IntPtr.Zero;
@@ -96,12 +97,23 @@ window.__scPipUpdate(location.href);})()";
             ApplyLoc();
             _initialized = true;
             AdBlock.Enabled = _state.AdBlockOn;
-            AdBlock.Strict = _state.AdStrict;
             Themes.Apply(_state.Theme);
             Topmost = _state.Topmost;
             SetupTray();
             ApplyAutostart();
-            Loaded += delegate { FadeIn(this, 350); };
+            Loaded += delegate
+            {
+                FadeIn(this, 450);
+                var tt = new System.Windows.Media.TranslateTransform(0, 18);
+                MainContent.RenderTransform = tt;
+                var slide = new System.Windows.Media.Animation.DoubleAnimation(
+                    18, 0, new Duration(TimeSpan.FromMilliseconds(450)));
+                slide.EasingFunction = new System.Windows.Media.Animation.CubicEase
+                {
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+                };
+                tt.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, slide);
+            };
             if (tampered)
                 Snack(Loc.Get("ErrTitle"), Loc.Get("VaultBroken"),
                     UiControls.ControlAppearance.Caution);
@@ -144,16 +156,22 @@ window.__scPipUpdate(location.href);})()";
                 SidebarView.Visibility = Visibility.Visible;
                 if (double.IsNaN(from)) from = 0;
                 var anim = new System.Windows.Media.Animation.DoubleAnimation(
-                    from, 240, new Duration(TimeSpan.FromMilliseconds(220)));
-                anim.EasingFunction = new System.Windows.Media.Animation.QuadraticEase();
+                    from, 240, new Duration(TimeSpan.FromMilliseconds(300)));
+                anim.EasingFunction = new System.Windows.Media.Animation.CubicEase
+                {
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+                };
                 SidebarView.BeginAnimation(FrameworkElement.WidthProperty, anim);
             }
             else
             {
                 if (double.IsNaN(from)) from = 240;
                 var anim = new System.Windows.Media.Animation.DoubleAnimation(
-                    from, 0, new Duration(TimeSpan.FromMilliseconds(220)));
-                anim.EasingFunction = new System.Windows.Media.Animation.QuadraticEase();
+                    from, 0, new Duration(TimeSpan.FromMilliseconds(300)));
+                anim.EasingFunction = new System.Windows.Media.Animation.CubicEase
+                {
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+                };
                 anim.Completed += delegate { SidebarView.Visibility = Visibility.Collapsed; };
                 SidebarView.BeginAnimation(FrameworkElement.WidthProperty, anim);
             }
@@ -163,6 +181,10 @@ window.__scPipUpdate(location.href);})()";
             el.Opacity = 0;
             var anim = new System.Windows.Media.Animation.DoubleAnimation(
                 0, 1, new Duration(TimeSpan.FromMilliseconds(ms)));
+            anim.EasingFunction = new System.Windows.Media.Animation.CubicEase
+            {
+                EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+            };
             el.BeginAnimation(UIElement.OpacityProperty, anim);
         }
         public void ApplyLocPublic() { ApplyLoc(); }
@@ -207,9 +229,7 @@ window.__scPipUpdate(location.href);})()";
             _state.Lang = langKept;
             Loc.Current = Loc.Resolve(_state.Lang);
             AdBlock.Enabled = _state.AdBlockOn;
-            AdBlock.Strict = _state.AdStrict;
             AdBlock.Enabled = _state.AdBlockOn;
-            AdBlock.Strict = _state.AdStrict;
             ApplyStateToUi();
             ApplyLoc();
             BuildTrayMenu();
@@ -367,6 +387,7 @@ window.__scPipUpdate(location.href);})()";
                 string dir = Path.Combine(SecureStore.DataDir, "EBWebView");
                 var env = await CoreWebView2Environment.CreateAsync(
                     null, dir, new CoreWebView2EnvironmentOptions(EngineArgs));
+                _env = env;
                 await Browser.EnsureCoreWebView2Async(env);
                 var settings = Browser.CoreWebView2.Settings;
                 settings.AreDevToolsEnabled = false;
@@ -382,6 +403,7 @@ window.__scPipUpdate(location.href);})()";
                 catch { }
                 AdBlock.Attach(Browser.CoreWebView2);
                 Browser.CoreWebView2.NavigationStarting += Browser_NavigationStarting;
+                Browser.CoreWebView2.NewWindowRequested += Browser_NewWindowRequested;
                 Browser.SourceChanged += Browser_SourceChanged;
                 Browser.NavigationCompleted += Browser_NavigationCompleted;
                 Browser.WebMessageReceived += Browser_WebMessageReceived;
@@ -399,6 +421,23 @@ window.__scPipUpdate(location.href);})()";
                 catch { }
                 await _dialogs.ShowAlertAsync("WebView2", Loc.Get("WebMsg") + "\n" + ex.Message,
                     "OK", CancellationToken.None);
+            }
+        }
+        private void Browser_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            e.Handled = true;
+            var deferral = e.GetDeferral();
+            try
+            {
+                var auth = new AuthWindow();
+                auth.Owner = this;
+                auth.Show();
+                auth.OpenPopupAsync(_env, e, deferral);
+            }
+            catch
+            {
+                try { deferral.Complete(); }
+                catch { }
             }
         }
         private void Browser_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)

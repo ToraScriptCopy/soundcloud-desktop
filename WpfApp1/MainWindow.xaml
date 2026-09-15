@@ -61,7 +61,7 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="2" Margin="12,0">
+        <Grid x:Name="MainContent" Grid.Row="2" Margin="12,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="SidebarCol" Width="Auto"/>
                 <ColumnDefinition Width="*"/>

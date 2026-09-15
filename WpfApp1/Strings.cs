@@ -79,8 +79,6 @@ namespace WpfApp1
             { "TrayHide", new string[] { "Сворачивать в трей", "Minimize to tray", "Згортати в трей", "最小化到托盘", "In Tray minimieren", "Réduire dans la barre", "Minimizar a bandeja", "Minimalizuj do zasobnika", "Tepsiye küçült", "Riduci nel tray" } },
             { "Autostart", new string[] { "Автозапуск с Windows", "Start with Windows", "Автозапуск із Windows", "开机自启动", "Mit Windows starten", "Démarrer avec Windows", "Iniciar con Windows", "Uruchamiaj z Windows", "Windows ile başlat", "Avvia con Windows" } },
             { "AdBlockLbl", new string[] { "Блокировка рекламы", "Ad blocking", "Блокування реклами", "广告拦截", "Werbeblocker", "Blocage pub", "Bloqueo de anuncios", "Blokowanie reklam", "Reklam engelleme", "Blocco annunci" } },
-            { "StrictBlock", new string[] { "Строгая (режет и трекеры)", "Strict (blocks trackers too)", "Строга (ріже й трекери)", "严格（拦截追踪器）", "Streng (auch Tracker)", "Strict (anti-trackeurs)", "Estricto (anti-rastreo)", "Surowy (tnie trackery)", "Sıkı (izleyiciler dahil)", "Stretto (anti-tracker)" } },
-            { "StrictHint", new string[] { "Может ломать вход через Google/Facebook.", "May break Google/Facebook login.", "Може ламати вхід через Google/Facebook.", "可能导致谷歌/脸书登录失败。", "Kann Google/Facebook-Login stören.", "Peut casser la connexion Google/Facebook.", "Puede romper el login con Google/Facebook.", "Może psuć logowanie Google/Facebook.", "Google/Facebook girişini bozabilir.", "Può rompere il login Google/Facebook." } },
             { "SetupTitle", new string[] { "Установка", "Setup", "Встановлення", "安装", "Setup", "Installation", "Instalación", "Instalator", "Kurulum", "Installazione" } },
             { "SetupLangLbl", new string[] { "Язык установки", "Setup language", "Мова встановлення", "安装语言", "Setup-Sprache", "Langue d'installation", "Idioma de instalación", "Język instalatora", "Kurulum dili", "Lingua di installazione" } },
             { "SetupNext", new string[] { "Далее", "Next", "Далі", "下一步", "Weiter", "Suivant", "Siguiente", "Dalej", "İleri", "Avanti" } },
@@ -161,3 +159,4 @@ namespace WpfApp1
         }
     }
 }
+

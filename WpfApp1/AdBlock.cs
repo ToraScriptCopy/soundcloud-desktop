@@ -6,7 +6,6 @@ namespace WpfApp1
     public static class AdBlock
     {
         public static bool Enabled = true;
-        public static bool Strict = false;
         private static readonly string[] Hosts = new string[]
         {
             "doubleclick.net", "googlesyndication.com", "googleadservices.com",
@@ -36,17 +35,6 @@ namespace WpfApp1
             "zedo.com", "undertone.com", "tritondigital.com", "podtrac.com",
             "chartable.com", "podsights.com"
         };
-        private static readonly string[] StrictHosts = new string[]
-        {
-            "google-analytics.com", "googletagmanager.com", "facebook.net",
-            "connect.facebook.net", "bat.bing.com", "hotjar.com", "hotjar.io",
-            "fullstory.com", "mixpanel.com", "amplitude.com", "segment.io",
-            "segment.com", "optimizely.com", "scorecardresearch.com", "demdex.net",
-            "omtrdc.net", "2o7.net", "newrelic.com", "nr-data.net",
-            "bugsnag.com", "sentry.io", "sentry-cdn.com", "appsflyer.com",
-            "adjust.com", "branch.io", "kochava.com", "moat.com",
-            "adsafeprotected.com", "doubleverify.com", "imrworldwide.com"
-        };
         private static readonly string[] Patterns = new string[]
         {
             "/ads/", "/ads.", "/adserver", "/adservice", "adsystem", "pagead",
@@ -65,9 +53,9 @@ namespace WpfApp1
         };
         public const string CosmeticCss =
             "[class*='adSlot'],[class*='AdSlot'],[class*='sponsor'],[class*='Sponsor']," +
-            "[class*='promoted'],[class*='Promoted'],[id*='adSlot'],[id*='banner']," +
-            "[class*='announcement'],[class*='Announcement'],[class*='upsell']," +
-            "[class*='Upsell'],[class*='premiumBanner']{display:none!important;}";
+            "[class*='promoted'],[class*='Promoted'],[id*='adSlot']," +
+            "[class*='upsell'],[class*='Upsell']," +
+            "[class*='premiumBanner']{display:none!important;}";
         public static bool ShouldBlock(string url)
         {
             if (!Enabled || string.IsNullOrEmpty(url)) return false;
@@ -78,11 +66,6 @@ namespace WpfApp1
             string host = u.Host.ToLowerInvariant();
             for (int i = 0; i < Hosts.Length; i++)
                 if (host == Hosts[i] || host.EndsWith("." + Hosts[i])) return true;
-            if (Strict)
-            {
-                for (int i = 0; i < StrictHosts.Length; i++)
-                    if (host == StrictHosts[i] || host.EndsWith("." + StrictHosts[i])) return true;
-            }
             string hay = (u.Host + u.PathAndQuery).ToLowerInvariant();
             for (int i = 0; i < Patterns.Length; i++)
                 if (hay.Contains(Patterns[i])) return true;
