@@ -39,6 +39,12 @@ namespace WpfApp1
                 + "&hide_related=false&show_comments=true&show_user=true"
                 + "&show_reposts=false&show_teaser=true&visual=true";
         }
+        public void ApplyLocPublic()
+        {
+            PipTitle.Text = Loc.Get("PipTitle");
+            PipCloseItem.Header = Loc.Get("TipClose");
+            Title = Loc.Get("PipTitle");
+        }
         private async void PipWindow_Loaded(object sender, RoutedEventArgs e)
         {
             try

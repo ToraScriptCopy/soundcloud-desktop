@@ -13,7 +13,7 @@ namespace Setup
     {
         private const string AppName = "SoundCloud Desktop Beta";
         private const string AppId = "SoundCloudDesktopBeta";
-        private const string AppExe = "WpfApp1.exe";
+        private const string AppExe = "SoundCloudDesk.exe";
         public MainWindow()
         {
             InitializeComponent();

@@ -25,7 +25,7 @@
 
         <ui:TitleBar Grid.Row="0" Title="SoundCloud Desktop Beta" />
 
-        <Grid Grid.Row="1" Margin="12,4,12,8">
+        <Grid Grid.Row="1" Margin="12,2,12,6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -110,7 +110,7 @@
             <wv2:WebView2 x:Name="Browser" Grid.Column="1"/>
         </Grid>
 
-        <Border Grid.Row="3" Margin="12,8,12,12" Padding="10,8" CornerRadius="10"
+        <Border Grid.Row="3" Margin="12,6,12,8" Padding="10,7" CornerRadius="10"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">

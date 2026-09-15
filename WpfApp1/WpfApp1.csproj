@@ -5,8 +5,12 @@
     <TargetFramework>net48</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
     <UseWPF>true</UseWPF>
-    <AssemblyName>WpfApp1</AssemblyName>
+    <AssemblyName>SoundCloudDesk</AssemblyName>
     <RootNamespace>WpfApp1</RootNamespace>
+    <Product>SoundCloud Desktop Beta</Product>
+    <AssemblyTitle>SoundCloud Desktop Beta</AssemblyTitle>
+    <Version>1.3.0</Version>
+    <FileVersion>1.3.0.0</FileVersion>
     <ApplicationIcon>assets\icon.ico</ApplicationIcon>
     <LangVersion>7.3</LangVersion>
     <Nullable>disable</Nullable>

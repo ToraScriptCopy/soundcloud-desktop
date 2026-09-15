@@ -189,6 +189,8 @@ window.__scPipUpdate(location.href);})()";
             BtnExt.ToolTip = Loc.Get("OpenExt");
             MuteSwitch.Content = Loc.Get("Mute");
             BuildTrayMenu();
+            try { if (_pip != null) _pip.ApplyLocPublic(); }
+            catch { }
             if (!_hasTitle) NowPlaying.Text = Loc.Get("IdleTrack");
         }
         public void SaveAllState()
@@ -349,18 +351,34 @@ window.__scPipUpdate(location.href);})()";
                 VolSlider.Value = Math.Min(100, VolSlider.Value + 5);
             }
         }
+        private static string EngineDir(int engine)
+        {
+            if (engine == 1) return Path.Combine(SecureStore.DataDir, "EBWebView-Edge");
+            if (engine == 2) return Path.Combine(SecureStore.DataDir, "EBWebView-Chrome");
+            return Path.Combine(SecureStore.DataDir, "EBWebView");
+        }
         private async void InitBrowser()
         {
             try
             {
-                string dir = Path.Combine(SecureStore.DataDir, "EBWebView");
                 if (_state.Engine < 0 || _state.Engine > 2) _state.Engine = 0;
-                var envRes = await Engines.CreateAsync(_state.Engine, dir);
-                var env = envRes.Env;
-                await Browser.EnsureCoreWebView2Async(env);
-                if ((_state.Engine == 1 || _state.Engine == 2) && !envRes.Shared)
-                    Snack(Loc.Get("ErrTitle"), Loc.Get("EngineLocked"),
+                CoreWebView2Environment env = null;
+                try
+                {
+                    var envRes = await Engines.CreateAsync(_state.Engine, EngineDir(_state.Engine));
+                    env = envRes.Env;
+                    if ((_state.Engine == 1 || _state.Engine == 2) && !envRes.Shared)
+                        Snack(Loc.Get("ErrTitle"), Loc.Get("EngineLocked"),
+                            UiControls.ControlAppearance.Caution);
+                }
+                catch
+                {
+                    var fb = await Engines.CreateAsync(0, EngineDir(0));
+                    env = fb.Env;
+                    Snack(Loc.Get("ErrTitle"), Loc.Get("EngineFailed"),
                         UiControls.ControlAppearance.Caution);
+                }
+                await Browser.EnsureCoreWebView2Async(env);
                 var settings = Browser.CoreWebView2.Settings;
                 settings.AreDevToolsEnabled = false;
                 settings.IsStatusBarEnabled = false;

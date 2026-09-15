@@ -40,6 +40,7 @@ namespace WpfApp1
                 EngineBox.Items.Add(name);
             }
             EngineBox.SelectedIndex = _state.Engine >= 0 && _state.Engine <= 3 ? _state.Engine : 0;
+            RefreshEngineStatus();
             HideHeaderSwitch2.IsChecked = _state.HideHeader;
             TopmostSwitch.IsChecked = _state.Topmost;
             TrayHideSwitch.IsChecked = _state.TrayHide;
@@ -52,7 +53,58 @@ namespace WpfApp1
             Loc.FillKeyCombo(HotVolDnBox, _state.HotVolDn);
             Loc.FillKeyCombo(HotVolUpBox, _state.HotVolUp);
         }
+        private bool _applyingLoc;
         private void ApplyLoc()
+        {
+            if (_applyingLoc) return;
+            _applyingLoc = true;
+            try
+            {
+                RefillLang();
+                RefillThemes();
+                RefillEngines();
+                RefillKeys(HotPrevBox, _state.HotPrev);
+                RefillKeys(HotPlayBox, _state.HotPlay);
+                RefillKeys(HotNextBox, _state.HotNext);
+                RefillKeys(HotVolDnBox, _state.HotVolDn);
+                RefillKeys(HotVolUpBox, _state.HotVolUp);
+                ApplyLocTexts();
+            }
+            finally { _applyingLoc = false; }
+        }
+        private void RefillLang()
+        {
+            int s = LangBox2.SelectedIndex;
+            Loc.FillLangCombo(LangBox2, _state.Lang);
+            if (s >= 0 && s < LangBox2.Items.Count) LangBox2.SelectedIndex = s;
+        }
+        private void RefillThemes()
+        {
+            int s = ThemeBox.SelectedIndex;
+            ThemeBox.Items.Clear();
+            for (int i = 0; i < Themes.Count; i++)
+                ThemeBox.Items.Add(Loc.Get("Theme" + i));
+            if (s >= 0 && s < ThemeBox.Items.Count) ThemeBox.SelectedIndex = s;
+        }
+        private void RefillEngines()
+        {
+            int s = EngineBox.SelectedIndex;
+            EngineBox.Items.Clear();
+            for (int i = 0; i <= 3; i++)
+            {
+                string name = Loc.Get(Engines.NameKey(i));
+                if (i != 0 && !Engines.IsAvailable(i)) name += Loc.Get("EngineMissing");
+                EngineBox.Items.Add(name);
+            }
+            if (s >= 0 && s < EngineBox.Items.Count) EngineBox.SelectedIndex = s;
+        }
+        private void RefillKeys(ComboBox box, int cur)
+        {
+            int s = box.SelectedIndex;
+            Loc.FillKeyCombo(box, cur);
+            if (s >= 0 && s < box.Items.Count) box.SelectedIndex = s;
+        }
+        private void ApplyLocTexts()
         {
             Title = Loc.Get("SettingsTitle");
             SetBar.Title = Loc.Get("SettingsTitle");
@@ -60,6 +112,7 @@ namespace WpfApp1
             LangBox2.Items[0] = Loc.Get("LangAuto");
             ThemeLabel2.Text = Loc.Get("ThemeLabel");
             EngineLabel2.Text = Loc.Get("EngineLabel");
+            RefreshEngineStatus();
             HideHeaderSwitch2.Content = Loc.Get("HideHeader");
             TopmostSwitch.Content = Loc.Get("TopmostMain");
             TrayHideSwitch.Content = Loc.Get("TrayHide");
@@ -111,6 +164,57 @@ namespace WpfApp1
                 _owner.SaveAllState();
                 _owner.RestartApp();
             }
+        }
+        private void RefreshEngineStatus()
+        {
+            int cur = EngineBox.SelectedIndex < 0 ? _state.Engine : EngineBox.SelectedIndex;
+            EngineDlBtn.Visibility = Visibility.Collapsed;
+            if (cur == 0)
+            {
+                bool ok = Microsoft.Win32.Registry.GetValue(
+                    @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\ClientState\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+                    "pv", null) != null;
+                EngineStatus.Text = ok ? "WebView2 Runtime OK" : Loc.Get("SetupWebViewMsg");
+                if (!ok)
+                {
+                    EngineDlBtn.Visibility = Visibility.Visible;
+                    EngineDlBtn.Content = Loc.Get("EngineDl") + " WebView2";
+                }
+            }
+            else if (cur == 1 || cur == 2)
+            {
+                string dir = Engines.ExeFolder(cur);
+                if (dir == null)
+                {
+                    EngineStatus.Text = Loc.Get(Engines.NameKey(cur)) + Loc.Get("EngineMissing");
+                    EngineDlBtn.Visibility = Visibility.Visible;
+                    EngineDlBtn.Content = Loc.Get("EngineDl") + " " + (cur == 1 ? "Edge" : "Chrome");
+                }
+                else
+                {
+                    string ver = "";
+                    try
+                    {
+                        string exe = System.IO.Path.Combine(dir, cur == 1 ? "msedge.exe" : "chrome.exe");
+                        ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(exe).ProductVersion;
+                    }
+                    catch { }
+                    EngineStatus.Text = Loc.Get(Engines.NameKey(cur)) + " " + ver;
+                }
+            }
+            else
+            {
+                EngineStatus.Text = Loc.Get("EngineFirefox");
+            }
+        }
+        private void EngineDlBtn_Click(object sender, RoutedEventArgs e)
+        {
+            int cur = EngineBox.SelectedIndex < 0 ? 0 : EngineBox.SelectedIndex;
+            string url = "https://go.microsoft.com/fwlink/p/?LinkId=2124703";
+            if (cur == 1) url = "https://go.microsoft.com/fwlink/?linkid=2108834";
+            else if (cur == 2) url = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
+            try { System.Diagnostics.Process.Start(url); }
+            catch { }
         }
         private void HideHeaderSwitch2_Changed(object sender, RoutedEventArgs e)
         {
