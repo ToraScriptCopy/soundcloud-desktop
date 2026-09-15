@@ -1,14 +1,10 @@
 using System.Windows.Media;
 using Wpf.Ui.Appearance;
-
 namespace WpfApp1
 {
-    // 10 themes: Fluent base (system/dark/light) + accent color.
-    // Names live in Loc as Theme0..Theme9.
     public static class Themes
     {
         public const int Count = 10;
-
         public static void Apply(int index)
         {
             if (index <= 0)
@@ -18,7 +14,6 @@ namespace WpfApp1
                 catch { }
                 return;
             }
-
             ApplicationTheme baseTheme = ApplicationTheme.Dark;
             Color accent = Color.FromRgb(0xFF, 0x55, 0x00);
             switch (index)
@@ -55,15 +50,13 @@ namespace WpfApp1
                 default:
                     break;
             }
-
             ApplicationThemeManager.Apply(baseTheme);
             try { ApplicationAccentColorManager.Apply(accent, baseTheme, false, false); }
             catch { }
         }
-
         public static bool IsDark(int index)
         {
-            return index != 2; // only the Light theme is light-based
+            return index != 2;
         }
     }
 }

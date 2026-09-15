@@ -1,10 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
-
 namespace WpfApp1
 {
-    // Strings for 10 languages, no resx needed.
-    // Array order: ru, en, uk, zh, de, fr, es, pl, tr, it.
     public static class Loc
     {
         public static readonly string[] Codes =
@@ -14,9 +11,7 @@ namespace WpfApp1
                 "Français", "Español", "Polski", "Türkçe", "Italiano" };
         public static readonly string[] PrefCodes =
             new string[] { "auto", "ru", "en", "uk", "zh", "de", "fr", "es", "pl", "tr", "it" };
-
         public static string Current = "en";
-
         private static readonly Dictionary<string, string[]> T = new Dictionary<string, string[]>
         {
             { "NavHome", new string[] { "Главная", "Home", "Головна", "首页", "Start", "Accueil", "Inicio", "Strona główna", "Ana Sayfa", "Home" } },
@@ -40,7 +35,6 @@ namespace WpfApp1
             { "TipPrev", new string[] { "Предыдущий трек", "Previous track", "Попередній трек", "上一首", "Vorheriger Titel", "Titre précédent", "Tema anterior", "Poprzedni utwór", "Önceki parça", "Brano precedente" } },
             { "TipPlay", new string[] { "Играть / пауза", "Play / pause", "Грати / пауза", "播放 / 暂停", "Abspielen / Pause", "Lecture / pause", "Reproducir / pausar", "Odtwórz / pauza", "Oynat / duraklat", "Riproduci / pausa" } },
             { "TipNext", new string[] { "Следующий трек", "Next track", "Наступний трек", "下一首", "Nächster Titel", "Titre suivant", "Tema siguiente", "Następny utwór", "Sonraki parça", "Brano successivo" } },
-            { "VolCap", new string[] { "Громкость", "Volume", "Гучність", "音量", "Lautstärke", "Volume", "Volumen", "Głośność", "Ses", "Volume" } },
             { "Mute", new string[] { "Мут", "Mute", "Мут", "静音", "Stumm", "Muet", "Silenciar", "Wycisz", "Sessiz", "Muto" } },
             { "IdleTrack", new string[] { "Ничего не играет", "Nothing playing", "Нічого не грає", "当前未播放", "Nichts spielt", "Rien en lecture", "Nada en reproducción", "Nic nie gra", "Çalan bir şey yok", "Nulla in riproduzione" } },
             { "NeedLink", new string[] { "Вставь ссылку на плейлист или трек.", "Paste a playlist or track link first.", "Вставте посилання на плейлист або трек.", "请先粘贴播放列表或单曲链接。", "Füge zuerst einen Playlist- oder Track-Link ein.", "Colle d'abord un lien playlist ou titre.", "Pega primero un enlace de playlist o tema.", "Najpierw wklej link do playlisty lub utworu.", "Önce bir çalma listesi veya parça bağlantısı yapıştır.", "Prima incolla un link playlist o brano." } },
@@ -103,8 +97,15 @@ namespace WpfApp1
             { "SetupWebViewMsg", new string[] { "Не найден WebView2 Runtime — без него сайт не заведётся.", "WebView2 Runtime missing — the app needs it.", "Не знайдено WebView2 Runtime — без нього ніяк.", "未找到 WebView2 Runtime，程序需要它。", "WebView2 Runtime fehlt — wird benötigt.", "WebView2 Runtime manquant — requis.", "Falta WebView2 Runtime — necesario.", "Brak WebView2 Runtime — wymagany.", "WebView2 Runtime eksik — gerekli.", "WebView2 Runtime mancante — necessario." } },
             { "SetupGetWebView", new string[] { "Скачать WebView2", "Get WebView2", "Завантажити WebView2", "下载 WebView2", "WebView2 laden", "Télécharger WebView2", "Descargar WebView2", "Pobierz WebView2", "WebView2 indir", "Scarica WebView2" } },
             { "SetupUninstDone", new string[] { "Программа удалена.", "Uninstalled.", "Видалено.", "已卸载。", "Deinstalliert.", "Désinstallé.", "Desinstalado.", "Odinstalowano.", "Kaldırıldı.", "Disinstallato." } },
+            { "EngineLabel", new string[] { "Движок браузера", "Browser engine", "Рушій браузера", "浏览器引擎", "Browser-Engine", "Moteur de navigation", "Motor del navegador", "Silnik przeglądarki", "Tarayıcı motoru", "Motore browser" } },
+            { "EngineCustom", new string[] { "Свой Chromium (чистый)", "Custom Chromium (clean)", "Власний Chromium (чистий)", "自带 Chromium（纯净）", "Eigenes Chromium (schlank)", "Chromium perso (allégé)", "Chromium propio (limpio)", "Własny Chromium (odchudzony)", "Özel Chromium (hafif)", "Chromium personalizzato (leggero)" } },
+            { "EngineEdge", new string[] { "Microsoft Edge (мой профиль)", "Microsoft Edge (my profile)", "Microsoft Edge (мій профіль)", "Microsoft Edge（我的配置）", "Microsoft Edge (mein Profil)", "Microsoft Edge (mon profil)", "Microsoft Edge (mi perfil)", "Microsoft Edge (mój profil)", "Microsoft Edge (profilim)", "Microsoft Edge (mio profilo)" } },
+            { "EngineChrome", new string[] { "Google Chrome (мой профиль)", "Google Chrome (my profile)", "Google Chrome (мій профіль)", "Google Chrome（我的配置）", "Google Chrome (mein Profil)", "Google Chrome (mon profil)", "Google Chrome (mi perfil)", "Google Chrome (mój profil)", "Google Chrome (profilim)", "Google Chrome (mio profilo)" } },
+            { "EngineFirefox", new string[] { "Firefox (не встраивается)", "Firefox (can't embed)", "Firefox (не вбудовується)", "Firefox（无法嵌入）", "Firefox (nicht einbettbar)", "Firefox (non intégrable)", "Firefox (no integrable)", "Firefox (nie do osadzenia)", "Firefox (gömülemez)", "Firefox (non integrabile)" } },
+            { "EngineMissing", new string[] { " — не найден", " — not found", " — не знайдено", "（未找到）", " — nicht gefunden", " — introuvable", " — no encontrado", " — nie znaleziono", " — bulunamadı", " — non trovato" } },
+            { "FirefoxSoon", new string[] { "Firefox нельзя встроить в окно — Mozilla не даёт API. Остаётся текущий движок.", "Firefox can't be embedded — Mozilla provides no API. Keeping the current engine.", "Firefox не можна вбудувати — Mozilla не дає API. Лишається поточний рушій.", "Firefox 无法嵌入——Mozilla 未提供 API，保持当前引擎。", "Firefox lässt sich nicht einbetten — Mozilla bietet keine API. Aktuelle Engine bleibt.", "Firefox ne s'intègre pas — Mozilla ne fournit pas d'API. Moteur actuel conservé.", "Firefox no se puede incrustar — Mozilla no da API. Se mantiene el motor.", "Firefoksa nie da się osadzić — Mozilla nie daje API. Zostaje aktualny silnik.", "Firefox gömülemez — Mozilla API vermiyor. Mevcut motor kalıyor.", "Firefox non si integra — Mozilla non fornisce API. Resta il motore attuale." } },
+            { "EngineLocked", new string[] { "Профиль занят запущенным браузером — включён отдельный профиль.", "Profile is locked by the running browser — using an isolated profile.", "Профіль зайнятий запущеним браузером — ввімкнено окремий.", "配置文件正被运行中的浏览器占用——已切换到独立配置。", "Profil vom laufenden Browser belegt — isoliertes Profil aktiv.", "Profil verrouillé par le navigateur — profil isolé activé.", "Perfil bloqueado por el navegador — perfil aislado activado.", "Profil zajęty przez przeglądarkę — włączono osobny profil.", "Profil çalışan tarayıcı tarafından kilitli — yalıtılmış profil açıldı.", "Profilo occupato dal browser — profilo isolato attivato." } },
         };
-
         public static string Get(string key)
         {
             string[] arr;
@@ -113,7 +114,6 @@ namespace WpfApp1
             if (i < 0 || i >= arr.Length) i = 1;
             return arr[i];
         }
-
         public static int IndexOf(string code)
         {
             if (code == null) return -1;
@@ -121,8 +121,6 @@ namespace WpfApp1
                 if (Codes[i] == code) return i;
             return -1;
         }
-
-        // Preference -> system language -> English.
         public static string Resolve(string pref)
         {
             if (!string.IsNullOrEmpty(pref) && pref != "auto" && IndexOf(pref) >= 0)
@@ -135,7 +133,6 @@ namespace WpfApp1
             catch { }
             return "en";
         }
-
         public static void FillLangCombo(System.Windows.Controls.ComboBox box, string current)
         {
             box.Items.Clear();
@@ -146,14 +143,12 @@ namespace WpfApp1
                 if (PrefCodes[i] == current) sel = i;
             box.SelectedIndex = sel;
         }
-
         public static readonly int[] KeyChoices = new int[]
         {
             0,
             0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69,
             0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B
         };
-
         public static string KeyName(int vk)
         {
             if (vk == 0) return Get("KeyOff");
@@ -161,7 +156,6 @@ namespace WpfApp1
             if (vk >= 0x70 && vk <= 0x7B) return "F" + (vk - 0x6F);
             return "VK" + vk;
         }
-
         public static void FillKeyCombo(System.Windows.Controls.ComboBox box, int current)
         {
             box.Items.Clear();

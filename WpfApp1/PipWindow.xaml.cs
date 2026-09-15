@@ -3,12 +3,8 @@ using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Web.WebView2.Core;
-
 namespace WpfApp1
 {
-    // PiP player: always on top, slim themed header, no buttons.
-    // Drag by the header, resize by the corner, right-click closes.
-    // Hosts the original playlist iframe with SoundCloud promos hidden.
     public partial class PipWindow : Wpf.Ui.Controls.FluentWindow
     {
         private const string PipAdCss =
@@ -18,10 +14,8 @@ namespace WpfApp1
             + "s.textContent=\"[class*='upsell'],[class*='Upsell'],[class*='promo'],"
             + "[class*='Promo'],[id*='promo'],[class*='advert'],[class*='Advert'],"
             + "[class*='appBanner'],[class*='AppBanner']{display:none!important;}\";})()";
-
         private readonly string _pageUrl;
         private readonly bool _autoplay;
-
         public PipWindow(string pageUrl, bool autoplay)
         {
             InitializeComponent();
@@ -38,7 +32,6 @@ namespace WpfApp1
             };
             Loaded += PipWindow_Loaded;
         }
-
         public static string BuildWidgetUrl(string pageUrl, bool autoplay)
         {
             return "https://w.soundcloud.com/player/?url=" + Uri.EscapeDataString(pageUrl)
@@ -46,7 +39,6 @@ namespace WpfApp1
                 + "&hide_related=false&show_comments=true&show_user=true"
                 + "&show_reposts=false&show_teaser=true&visual=true";
         }
-
         private async void PipWindow_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -70,7 +62,6 @@ namespace WpfApp1
                     Loc.Get("PipTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
         private void PipDrag_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -79,7 +70,6 @@ namespace WpfApp1
                 catch (InvalidOperationException) { }
             }
         }
-
         private void PipCloseItem_Click(object sender, RoutedEventArgs e)
         {
             Close();

@@ -16,17 +16,14 @@ using Wpf.Ui;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Extensions;
 using UiControls = Wpf.Ui.Controls;
-
 namespace WpfApp1
 {
-    // Main window: Fluent shell around soundcloud.com.
     public partial class MainWindow : UiControls.FluentWindow
     {
         private const string HomeUrl = "https://soundcloud.com/";
         private const string ChartsUrl = "https://soundcloud.com/charts/top";
         private const string LikesUrl = "https://soundcloud.com/you/likes";
         private const int WM_HOTKEY = 0x0312;
-
         private const string JsToggle =
             "(function(){var b=document.querySelector('button[aria-label=\"Pause\"]')"
             + "||document.querySelector('button[aria-label=\"Play\"]')"
@@ -36,29 +33,24 @@ namespace WpfApp1
             + "if(!b)return 'no-btn';b.click();"
             + "var a=document.querySelector('audio');"
             + "return (a&&!a.paused)?'playing':'paused';})()";
-
         private const string JsNext =
             "(function(){var b=document.querySelector('button[aria-label=\"Next track\"]')"
             + "||document.querySelector('button[title=\"Next\"]')"
             + "||document.querySelector('button[title=\"Play next\"]')"
             + "||document.querySelector('.skipControl__next');"
             + "if(!b)return 'no-btn';b.click();return 'ok';})()";
-
         private const string JsPrev =
             "(function(){var b=document.querySelector('button[aria-label=\"Previous track\"]')"
             + "||document.querySelector('button[title=\"Previous\"]')"
             + "||document.querySelector('button[title=\"Play previous\"]')"
             + "||document.querySelector('.skipControl__previous');"
             + "if(!b)return 'no-btn';b.click();return 'ok';})()";
-
         private const string JsPoll =
             "(function(){var t=0,d=0;"
             + "try{var a=document.querySelector('audio');"
             + "if(a){t=Math.floor(a.currentTime||0);d=Math.floor(a.duration||0);}}catch(e){}"
             + "try{if(window.__scPipUpdate)window.__scPipUpdate(location.href);}catch(e){}"
             + "return t+'|'+d+'|'+encodeURIComponent(document.title);})()";
-
-        // Встроенная PiP-кнопка сайта (Lucide picture-in-picture-2), правый верхний угол.
         private const string JsPipButton =
             @"(function(){if(window.__scPip)return;window.__scPip=true;
 var css=document.createElement('style');css.id='__scPipCss';
@@ -72,13 +64,10 @@ window.__scPipUpdate=function(url){try{var show=false;
 try{show=/(^|\.)soundcloud\.com$/.test(location.hostname)&&/^\/[^\/]+\/[^\/]+/.test(location.pathname)&&!/^\/(charts|search|you|discover|feed|library|settings|notifications|messages|upload|popular|terms|pages)(\/|$)/.test(location.pathname);}catch(e){}
 b.style.display=show?'flex':'none';}catch(e){}};
 window.__scPipUpdate(location.href);})()";
-
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
-
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-
         private bool _initialized;
         private bool _polling;
         private bool _hasTitle;
@@ -92,27 +81,20 @@ window.__scPipUpdate(location.href);})()";
         private readonly ISnackbarService _snackbar;
         private readonly IContentDialogService _dialogs;
         private readonly DispatcherTimer _poll = new DispatcherTimer();
-
         public AppState State { get { return _state; } }
-
         public MainWindow()
         {
             InitializeComponent();
-
             bool tampered;
             _state = SecureStore.Load(out tampered);
             Loc.Current = Loc.Resolve(_state.Lang);
-
             _snackbar = new SnackbarService();
             _snackbar.SetSnackbarPresenter(SnackbarPresenter);
             _dialogs = new ContentDialogService();
             _dialogs.SetDialogHost(DialogHost);
-
             ApplyStateToUi();
             ApplyLoc();
-
             _initialized = true;
-
             AdBlock.Enabled = _state.AdBlockOn;
             AdBlock.Strict = _state.AdStrict;
             Themes.Apply(_state.Theme);
@@ -120,20 +102,14 @@ window.__scPipUpdate(location.href);})()";
             SetupTray();
             ApplyAutostart();
             Loaded += delegate { FadeIn(this, 350); };
-
             if (tampered)
                 Snack(Loc.Get("ErrTitle"), Loc.Get("VaultBroken"),
                     UiControls.ControlAppearance.Caution);
-
             _poll.Interval = TimeSpan.FromSeconds(1);
             _poll.Tick += Poll_Tick;
             _poll.Start();
-
             InitBrowser();
         }
-
-        // ---------- Состояние -> UI ----------
-
         private void ApplyStateToUi()
         {
             VolSlider.Value = _state.Volume * 100;
@@ -145,7 +121,6 @@ window.__scPipUpdate(location.href);})()";
             AddrBox.Text = _state.LastUrl;
             ApplySidebar();
         }
-
         private void ApplySidebar()
         {
             SidebarCol.Width = GridLength.Auto;
@@ -160,7 +135,6 @@ window.__scPipUpdate(location.href);})()";
                 SidebarView.Visibility = Visibility.Visible;
             }
         }
-
         private void AnimateSidebar()
         {
             SidebarCol.Width = GridLength.Auto;
@@ -184,7 +158,6 @@ window.__scPipUpdate(location.href);})()";
                 SidebarView.BeginAnimation(FrameworkElement.WidthProperty, anim);
             }
         }
-
         private void FadeIn(UIElement el, int ms)
         {
             el.Opacity = 0;
@@ -192,11 +165,7 @@ window.__scPipUpdate(location.href);})()";
                 0, 1, new Duration(TimeSpan.FromMilliseconds(ms)));
             el.BeginAnimation(UIElement.OpacityProperty, anim);
         }
-
-        // ---------- Локализация ----------
-
         public void ApplyLocPublic() { ApplyLoc(); }
-
         private void ApplyLoc()
         {
             BtnMenu.ToolTip = Loc.Get("MenuTip");
@@ -222,9 +191,6 @@ window.__scPipUpdate(location.href);})()";
             BuildTrayMenu();
             if (!_hasTitle) NowPlaying.Text = Loc.Get("IdleTrack");
         }
-
-        // ---------- Хранилище (молча) ----------
-
         public void SaveAllState()
         {
             _state.Volume = VolSlider.Value / 100.0;
@@ -232,7 +198,6 @@ window.__scPipUpdate(location.href);})()";
             _state.PlaylistUrl = PlaylistBox.Text != null ? PlaylistBox.Text.Trim() : "";
             SecureStore.Save(_state);
         }
-
         public void ResetAllSettings()
         {
             string langKept = _state.Lang;
@@ -254,9 +219,7 @@ window.__scPipUpdate(location.href);})()";
             NavigateSmart(HomeUrl);
             SaveAllState();
         }
-
         private bool _allowExit;
-
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
             try
@@ -276,11 +239,7 @@ window.__scPipUpdate(location.href);})()";
             }
             catch { }
         }
-
-        // ---------- Трей и автозапуск ----------
-
         private System.Windows.Forms.NotifyIcon _tray;
-
         private void SetupTray()
         {
             _tray = new System.Windows.Forms.NotifyIcon();
@@ -295,7 +254,6 @@ window.__scPipUpdate(location.href);})()";
             BuildTrayMenu();
             _tray.Visible = true;
         }
-
         private void BuildTrayMenu()
         {
             if (_tray == null) return;
@@ -308,7 +266,6 @@ window.__scPipUpdate(location.href);})()";
             menu.MenuItems.Add(exit);
             _tray.ContextMenu = menu;
         }
-
         private void ShowMain()
         {
             try
@@ -319,7 +276,6 @@ window.__scPipUpdate(location.href);})()";
             }
             catch { }
         }
-
         public void ApplyAutostart()
         {
             try
@@ -337,9 +293,6 @@ window.__scPipUpdate(location.href);})()";
             }
             catch { }
         }
-
-        // ---------- Глобальные хоткеи ----------
-
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
@@ -351,7 +304,6 @@ window.__scPipUpdate(location.href);})()";
                 RefreshHotkeys();
             }
         }
-
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg == WM_HOTKEY)
@@ -361,7 +313,6 @@ window.__scPipUpdate(location.href);})()";
             }
             return IntPtr.Zero;
         }
-
         public void RefreshHotkeys()
         {
             if (_hwnd == IntPtr.Zero) return;
@@ -373,7 +324,6 @@ window.__scPipUpdate(location.href);})()";
                     RegisterHotKey(_hwnd, id, 0, (uint)vks[id - 1]);
             }
         }
-
         private async void OnHotkey(int id)
         {
             if (!_initialized) return;
@@ -399,23 +349,23 @@ window.__scPipUpdate(location.href);})()";
                 VolSlider.Value = Math.Min(100, VolSlider.Value + 5);
             }
         }
-
-        // ---------- Браузер ----------
-
         private async void InitBrowser()
         {
             try
             {
                 string dir = Path.Combine(SecureStore.DataDir, "EBWebView");
-                var env = await CoreWebView2Environment.CreateAsync(null, dir);
+                if (_state.Engine < 0 || _state.Engine > 2) _state.Engine = 0;
+                var envRes = await Engines.CreateAsync(_state.Engine, dir);
+                var env = envRes.Env;
                 await Browser.EnsureCoreWebView2Async(env);
-
+                if ((_state.Engine == 1 || _state.Engine == 2) && !envRes.Shared)
+                    Snack(Loc.Get("ErrTitle"), Loc.Get("EngineLocked"),
+                        UiControls.ControlAppearance.Caution);
                 var settings = Browser.CoreWebView2.Settings;
                 settings.AreDevToolsEnabled = false;
                 settings.IsStatusBarEnabled = false;
                 settings.IsGeneralAutofillEnabled = false;
                 settings.IsPasswordAutosaveEnabled = false;
-
                 try
                 {
                     Browser.CoreWebView2.Profile.PreferredColorScheme = Themes.IsDark(_state.Theme)
@@ -423,13 +373,11 @@ window.__scPipUpdate(location.href);})()";
                         : CoreWebView2PreferredColorScheme.Light;
                 }
                 catch { }
-
                 AdBlock.Attach(Browser.CoreWebView2);
                 Browser.CoreWebView2.NavigationStarting += Browser_NavigationStarting;
                 Browser.SourceChanged += Browser_SourceChanged;
                 Browser.NavigationCompleted += Browser_NavigationCompleted;
                 Browser.WebMessageReceived += Browser_WebMessageReceived;
-
                 ApplyVolumeNow();
                 NavigateSmart(_state.LastUrl);
             }
@@ -446,7 +394,6 @@ window.__scPipUpdate(location.href);})()";
                     "OK", CancellationToken.None);
             }
         }
-
         private void Browser_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
         {
             string uri = e.Uri ?? "";
@@ -455,19 +402,16 @@ window.__scPipUpdate(location.href);})()";
                 || uri.StartsWith("about:", StringComparison.OrdinalIgnoreCase)
                 || uri.StartsWith("edge-chromium-", StringComparison.OrdinalIgnoreCase))
                 return;
-
             e.Cancel = true;
             try { Process.Start(uri); }
             catch { }
         }
-
         private void Browser_SourceChanged(object sender, CoreWebView2SourceChangedEventArgs e)
         {
             if (!_initialized || Browser.Source == null) return;
             AddrBox.Text = Browser.Source.ToString();
             UpdateNavButtons();
         }
-
         private async void Browser_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
             if (!_initialized) return;
@@ -477,7 +421,6 @@ window.__scPipUpdate(location.href);})()";
             await UpdateTitleAsync();
             await ApplyVolumeAsync();
         }
-
         private void Browser_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
         {
             string msg = "";
@@ -489,24 +432,21 @@ window.__scPipUpdate(location.href);})()";
                 Dispatcher.BeginInvoke(new Action(delegate { OpenPipForUrl(url, true); }));
             }
         }
-
         private static string SiteCssJs(bool hide)
         {
+            string css = (hide ? "header.header{display:none!important;}" : "") + AdBlock.CosmeticCss;
+            css = css.Replace("\\", "\\\\").Replace("'", "\\'");
             return "(function(){var s=document.getElementById('__scNative');"
                 + "if(!s){s=document.createElement('style');s.id='__scNative';"
                 + "(document.head||document.documentElement).appendChild(s);}"
-                + "s.textContent=" + (hide ? "'header.header{display:none!important;}'" : "''") + ";})()";
+                + "s.textContent='" + css + "';})()";
         }
-
         private void UpdateNavButtons()
         {
             if (Browser == null || Browser.CoreWebView2 == null) return;
             BtnBack.IsEnabled = Browser.CanGoBack;
             BtnFwd.IsEnabled = Browser.CanGoForward;
         }
-
-        // ---------- Навигация ----------
-
         private void NavigateSmart(string text)
         {
             if (Browser == null || Browser.CoreWebView2 == null) return;
@@ -521,16 +461,13 @@ window.__scPipUpdate(location.href);})()";
                 url = "https://" + text;
             else
                 url = "https://soundcloud.com/search/sounds?q=" + Uri.EscapeDataString(text);
-
             try { Browser.Source = new Uri(url); }
             catch { Snack(Loc.Get("ErrTitle"), url, UiControls.ControlAppearance.Caution); }
         }
-
         private void AddrBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter) NavigateSmart(AddrBox.Text);
         }
-
         private void BtnGo_Click(object sender, RoutedEventArgs e) { NavigateSmart(AddrBox.Text); }
         private void BtnBack_Click(object sender, RoutedEventArgs e) { if (Browser.CanGoBack) Browser.GoBack(); }
         private void BtnFwd_Click(object sender, RoutedEventArgs e) { if (Browser.CanGoForward) Browser.GoForward(); }
@@ -538,14 +475,12 @@ window.__scPipUpdate(location.href);})()";
         private void BtnHome_Click(object sender, RoutedEventArgs e) { NavigateSmart(HomeUrl); }
         private void BtnCharts_Click(object sender, RoutedEventArgs e) { NavigateSmart(ChartsUrl); }
         private void BtnLikes_Click(object sender, RoutedEventArgs e) { NavigateSmart(LikesUrl); }
-
         private void BtnMenu_Click(object sender, RoutedEventArgs e)
         {
             _state.SidebarOpen = !_state.SidebarOpen;
             AnimateSidebar();
             SaveAllState();
         }
-
         private void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             try { if (_settingsWin != null) _settingsWin.Close(); }
@@ -554,7 +489,6 @@ window.__scPipUpdate(location.href);})()";
             _settingsWin.Owner = this;
             _settingsWin.Show();
         }
-
         private void BtnCopy_Click(object sender, RoutedEventArgs e)
         {
             string url = Browser.Source != null ? Browser.Source.ToString() : "";
@@ -567,7 +501,6 @@ window.__scPipUpdate(location.href);})()";
             }
             catch { }
         }
-
         private void BtnExt_Click(object sender, RoutedEventArgs e)
         {
             string url = Browser.Source != null ? Browser.Source.ToString() : "";
@@ -575,9 +508,6 @@ window.__scPipUpdate(location.href);})()";
             try { Process.Start(url); }
             catch { }
         }
-
-        // ---------- Звук: IsMuted + layered JS ----------
-
         private async Task<string> RunJs(string script)
         {
             try
@@ -587,7 +517,6 @@ window.__scPipUpdate(location.href);})()";
             }
             catch (Exception ex) { return "err:" + ex.Message; }
         }
-
         private async void FireJs(string script)
         {
             try
@@ -597,7 +526,6 @@ window.__scPipUpdate(location.href);})()";
             }
             catch { }
         }
-
         private static string Unquote(string json)
         {
             if (string.IsNullOrEmpty(json)) return "";
@@ -610,13 +538,11 @@ window.__scPipUpdate(location.href);})()";
             }
             return json;
         }
-
         private static string SafeUnescape(string s)
         {
             try { return Uri.UnescapeDataString(s ?? ""); }
             catch { return s ?? ""; }
         }
-
         private static string FmtTime(string s)
         {
             int sec;
@@ -625,10 +551,6 @@ window.__scPipUpdate(location.href);})()";
             if (h > 0) return h + ":" + m.ToString("D2") + ":" + ss.ToString("D2");
             return m + ":" + ss.ToString("D2");
         }
-
-        // SoundCloud volume is a custom vertical div slider, not an <input>.
-        // Set media elements + synthesize pointer events on .volume__sliderWrapper,
-        // then verify via aria-valuenow and retry. Mute is enforced by the engine too.
         private static string VolumeJs(double v)
         {
             return @"(function(v){
@@ -648,7 +570,6 @@ try{if(!window.__scVolObs){window.__scVolObs=new MutationObserver(function(muts)
 var cur='?';try{var w2=document.querySelector('.volume__sliderWrapper');if(w2)cur=w2.getAttribute('aria-valuenow');}catch(e){}
 return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
         }
-
         private void ApplyVolumeNow()
         {
             try
@@ -660,7 +581,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             double v = MuteSwitch.IsChecked == true ? 0 : VolSlider.Value / 100.0;
             FireJs(VolumeJs(v));
         }
-
         private async Task ApplyVolumeAsync()
         {
             bool muted = MuteSwitch.IsChecked == true;
@@ -684,7 +604,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
                 await Task.Delay(250);
             }
         }
-
         private async Task UpdateTitleAsync()
         {
             string title = Unquote(await RunJs("document.title"));
@@ -694,7 +613,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
                 NowPlaying.Text = title;
             }
         }
-
         private async void Poll_Tick(object sender, EventArgs e)
         {
             if (_polling || !_initialized || Browser == null || Browser.CoreWebView2 == null) return;
@@ -718,7 +636,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             catch { }
             _polling = false;
         }
-
         private async Task<string> ClickPlayerAsync(string js)
         {
             for (int i = 0; i < 3; i++)
@@ -729,7 +646,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             }
             return "no-btn";
         }
-
         private async void VolSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_initialized || VolSlider == null || VolLabel == null) return;
@@ -740,7 +656,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             if (VolSlider.Value > 0) _lastVolume = VolSlider.Value / 100.0;
             await ApplyVolumeAsync();
         }
-
         private async void MuteSwitch_Changed(object sender, RoutedEventArgs e)
         {
             if (!_initialized || MuteSwitch == null) return;
@@ -756,7 +671,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             UpdateVolIcon();
             await ApplyVolumeAsync();
         }
-
         private void UpdateVolIcon()
         {
             if (VolIcon == null) return;
@@ -764,12 +678,21 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             try { VolIcon.Data = (System.Windows.Media.Geometry)FindResource(muted ? "LucideVolX" : "LucideVol"); }
             catch { }
         }
-
+        public void RestartApp()
+        {
+            try
+            {
+                SaveAllState();
+                Process.Start(Process.GetCurrentProcess().MainModule.FileName);
+            }
+            catch { }
+            _allowExit = true;
+            Close();
+        }
         public void ReapplySiteCss()
         {
             FireJs(SiteCssJs(_state.HideHeader));
         }
-
         public void ApplyThemeNow()
         {
             Themes.Apply(_state.Theme);
@@ -782,7 +705,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             }
             catch { }
         }
-
         public async Task<bool> ClearCacheAsync()
         {
             try
@@ -793,15 +715,12 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             }
             catch { return false; }
         }
-
-        // ---------- CPU: сворачивание ----------
-
         private void MainWindow_StateChanged(object sender, EventArgs e)
         {
             if (Browser == null) return;
             if (WindowState == WindowState.Minimized)
             {
-                Browser.Visibility = Visibility.Collapsed; // страница не рисуется, звук идёт
+                Browser.Visibility = Visibility.Collapsed;
                 _poll.Interval = TimeSpan.FromSeconds(3);
             }
             else
@@ -810,18 +729,13 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
                 _poll.Interval = TimeSpan.FromSeconds(1);
             }
         }
-
-        // ---------- PiP ----------
-
         private void BtnPipPlay_Click(object sender, RoutedEventArgs e) { OpenPipForUrl(PlaylistOrCurrent(), true); }
         private void BtnPipOpen_Click(object sender, RoutedEventArgs e) { OpenPipForUrl(PlaylistOrCurrent(), false); }
         private void BtnPipHere_Click(object sender, RoutedEventArgs e) { OpenPipForUrl(PlaylistOrCurrent(), true); }
-
         private void PlaylistBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter) OpenPipForUrl(PlaylistOrCurrent(), true);
         }
-
         private string PlaylistOrCurrent()
         {
             string url = PlaylistBox.Text != null ? PlaylistBox.Text.Trim() : "";
@@ -829,7 +743,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
                 url = Browser.Source.ToString();
             return url;
         }
-
         private void OpenPipForUrl(string url, bool autoplay)
         {
             if (string.IsNullOrEmpty(url) || !url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -838,10 +751,8 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
                     UiControls.ControlAppearance.Caution);
                 return;
             }
-
             try
             {
-                // Second click on the same link toggles PiP closed.
                 if (_pip != null && _pipUrl == url)
                 {
                     _pip.Close();
@@ -852,10 +763,8 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
                 if (_pip != null) _pip.Close();
             }
             catch { }
-
             _state.PlaylistUrl = url;
             SaveAllState();
-
             _pip = new PipWindow(url, autoplay);
             _pipUrl = url;
             _pip.Owner = this;
@@ -868,9 +777,6 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             _pip.Top = area.Bottom - _pip.Height - 16;
             _pip.Show();
         }
-
-        // ---------- Мелочь ----------
-
         private void Snack(string title, string message, UiControls.ControlAppearance appearance)
         {
             try { _snackbar.Show(title, message, appearance, TimeSpan.FromSeconds(3)); }

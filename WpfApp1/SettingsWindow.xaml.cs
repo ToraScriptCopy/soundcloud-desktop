@@ -2,17 +2,13 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using UiControls = Wpf.Ui.Controls;
-
 namespace WpfApp1
 {
-    // Separate settings window: language, theme, window behavior,
-    // ad blocking, hotkey binds, cache, reset.
     public partial class SettingsWindow : UiControls.FluentWindow
     {
         private readonly MainWindow _owner;
         private readonly AppState _state;
         private bool _initialized;
-
         public SettingsWindow(MainWindow owner)
         {
             InitializeComponent();
@@ -29,7 +25,6 @@ namespace WpfApp1
                         0, 1, new Duration(TimeSpan.FromMilliseconds(250))));
             };
         }
-
         private void RefreshFromState()
         {
             Loc.FillLangCombo(LangBox2, _state.Lang);
@@ -37,6 +32,14 @@ namespace WpfApp1
             for (int i = 0; i < Themes.Count; i++)
                 ThemeBox.Items.Add(Loc.Get("Theme" + i));
             ThemeBox.SelectedIndex = _state.Theme >= 0 && _state.Theme < Themes.Count ? _state.Theme : 0;
+            EngineBox.Items.Clear();
+            for (int i = 0; i <= 3; i++)
+            {
+                string name = Loc.Get(Engines.NameKey(i));
+                if (i != 0 && !Engines.IsAvailable(i)) name += Loc.Get("EngineMissing");
+                EngineBox.Items.Add(name);
+            }
+            EngineBox.SelectedIndex = _state.Engine >= 0 && _state.Engine <= 3 ? _state.Engine : 0;
             HideHeaderSwitch2.IsChecked = _state.HideHeader;
             TopmostSwitch.IsChecked = _state.Topmost;
             TrayHideSwitch.IsChecked = _state.TrayHide;
@@ -49,7 +52,6 @@ namespace WpfApp1
             Loc.FillKeyCombo(HotVolDnBox, _state.HotVolDn);
             Loc.FillKeyCombo(HotVolUpBox, _state.HotVolUp);
         }
-
         private void ApplyLoc()
         {
             Title = Loc.Get("SettingsTitle");
@@ -57,6 +59,7 @@ namespace WpfApp1
             LangLabel2.Text = Loc.Get("LangLabel");
             LangBox2.Items[0] = Loc.Get("LangAuto");
             ThemeLabel2.Text = Loc.Get("ThemeLabel");
+            EngineLabel2.Text = Loc.Get("EngineLabel");
             HideHeaderSwitch2.Content = Loc.Get("HideHeader");
             TopmostSwitch.Content = Loc.Get("TopmostMain");
             TrayHideSwitch.Content = Loc.Get("TrayHide");
@@ -75,7 +78,6 @@ namespace WpfApp1
             CacheBtn.Content = Loc.Get("CacheBtn");
             VaultResetBtn.Content = Loc.Get("VaultResetBtn");
         }
-
         private void LangBox2_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!_initialized || LangBox2.SelectedIndex < 0) return;
@@ -85,7 +87,6 @@ namespace WpfApp1
             _owner.ApplyLocPublic();
             ApplyLoc();
         }
-
         private void ThemeBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!_initialized || ThemeBox.SelectedIndex < 0) return;
@@ -93,7 +94,24 @@ namespace WpfApp1
             _owner.ApplyThemeNow();
             _owner.SaveAllState();
         }
-
+        private void EngineBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_initialized || EngineBox.SelectedIndex < 0) return;
+            int want = EngineBox.SelectedIndex;
+            if (want == 3)
+            {
+                EngineBox.SelectedIndex = _state.Engine;
+                System.Windows.MessageBox.Show(Loc.Get("FirefoxSoon"),
+                    Loc.Get("SettingsTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            if (want != _state.Engine)
+            {
+                _state.Engine = want;
+                _owner.SaveAllState();
+                _owner.RestartApp();
+            }
+        }
         private void HideHeaderSwitch2_Changed(object sender, RoutedEventArgs e)
         {
             if (!_initialized) return;
@@ -101,7 +119,6 @@ namespace WpfApp1
             _owner.SaveAllState();
             _owner.ReapplySiteCss();
         }
-
         private void TopmostSwitch_Changed(object sender, RoutedEventArgs e)
         {
             if (!_initialized) return;
@@ -109,14 +126,12 @@ namespace WpfApp1
             _owner.Topmost = _state.Topmost;
             _owner.SaveAllState();
         }
-
         private void TrayHideSwitch_Changed(object sender, RoutedEventArgs e)
         {
             if (!_initialized) return;
             _state.TrayHide = TrayHideSwitch.IsChecked == true;
             _owner.SaveAllState();
         }
-
         private void AutostartSwitch_Changed(object sender, RoutedEventArgs e)
         {
             if (!_initialized) return;
@@ -124,7 +139,6 @@ namespace WpfApp1
             _owner.ApplyAutostart();
             _owner.SaveAllState();
         }
-
         private void AdBlockSwitch_Changed(object sender, RoutedEventArgs e)
         {
             if (!_initialized) return;
@@ -132,7 +146,6 @@ namespace WpfApp1
             AdBlock.Enabled = _state.AdBlockOn;
             _owner.SaveAllState();
         }
-
         private void StrictSwitch_Changed(object sender, RoutedEventArgs e)
         {
             if (!_initialized) return;
@@ -140,7 +153,6 @@ namespace WpfApp1
             AdBlock.Strict = _state.AdStrict;
             _owner.SaveAllState();
         }
-
         private void HotBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!_initialized) return;
@@ -155,7 +167,6 @@ namespace WpfApp1
             _owner.RefreshHotkeys();
             _owner.SaveAllState();
         }
-
         private void DefaultsBtn_Click(object sender, RoutedEventArgs e)
         {
             _state.HotPrev = 0x61;
@@ -171,14 +182,12 @@ namespace WpfApp1
             _owner.RefreshHotkeys();
             _owner.SaveAllState();
         }
-
         private async void CacheBtn_Click(object sender, RoutedEventArgs e)
         {
             CacheStatus.Text = "...";
             bool ok = await _owner.ClearCacheAsync();
             CacheStatus.Text = ok ? Loc.Get("CacheDone") : Loc.Get("ErrTitle");
         }
-
         private void VaultResetBtn_Click(object sender, RoutedEventArgs e)
         {
             _owner.ResetAllSettings();

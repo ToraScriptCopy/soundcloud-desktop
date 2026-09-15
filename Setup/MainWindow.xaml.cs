@@ -7,21 +7,16 @@ using System.Windows.Controls;
 using Microsoft.Win32;
 using WpfApp1;
 using UiControls = Wpf.Ui.Controls;
-
 namespace Setup
 {
-    // Tiny WPF installer: language -> folder -> copy -> shortcuts -> uninstall entry.
-    // Run with /uninstall to remove the app (used by Uninstaller.exe, a copy of this file).
     public partial class MainWindow : UiControls.FluentWindow
     {
         private const string AppName = "SoundCloud Desktop Beta";
         private const string AppId = "SoundCloudDesktopBeta";
         private const string AppExe = "WpfApp1.exe";
-
         public MainWindow()
         {
             InitializeComponent();
-
             string[] args = Environment.GetCommandLineArgs();
             foreach (string a in args)
             {
@@ -31,7 +26,6 @@ namespace Setup
                     return;
                 }
             }
-
             Loc.Current = Loc.Resolve("auto");
             Loc.FillLangCombo(LangBox, "auto");
             PathBox.Text = Path.Combine(
@@ -43,7 +37,6 @@ namespace Setup
             ApplyLoc();
             CheckWebView();
         }
-
         private void ApplyLoc()
         {
             Title = AppName + " — " + Loc.Get("SetupTitle");
@@ -63,14 +56,12 @@ namespace Setup
             DoneText.Text = Loc.Get("SetupDone");
             BtnClose.Content = Loc.Get("SetupClose");
         }
-
         private void LangBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (LangBox.SelectedIndex < 0) return;
             Loc.Current = Loc.Resolve(Loc.PrefCodes[LangBox.SelectedIndex]);
             ApplyLoc();
         }
-
         private void CheckWebView()
         {
             bool ok = Registry.GetValue(
@@ -79,17 +70,14 @@ namespace Setup
             WebViewWarn.Visibility = ok ? Visibility.Collapsed : Visibility.Visible;
             BtnWebView.Visibility = WebViewWarn.Visibility;
         }
-
         private void BtnWebView_Click(object sender, RoutedEventArgs e)
         {
             try { Process.Start("https://go.microsoft.com/fwlink/p/?LinkId=2124703"); }
             catch { }
         }
-
         private void BtnNext1_Click(object sender, RoutedEventArgs e) { ShowPage(PageMain); }
         private void BtnBack_Click(object sender, RoutedEventArgs e) { ShowPage(PageLang); }
         private void BtnClose_Click(object sender, RoutedEventArgs e) { Close(); }
-
         private void ShowPage(UIElement page)
         {
             PageLang.Visibility = Visibility.Collapsed;
@@ -98,7 +86,6 @@ namespace Setup
             PageDone.Visibility = Visibility.Collapsed;
             page.Visibility = Visibility.Visible;
         }
-
         private void BtnBrowse_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new System.Windows.Forms.FolderBrowserDialog();
@@ -107,7 +94,12 @@ namespace Setup
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 PathBox.Text = dlg.SelectedPath;
         }
-
+        private bool HasPayload()
+        {
+            return Array.Exists(
+                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames(),
+                delegate(string n) { return n == "Setup.payload.app.zip"; });
+        }
         private string SourceDir()
         {
             string near = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app");
@@ -115,7 +107,6 @@ namespace Setup
             return Path.GetFullPath(Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory, @"..\WpfApp1\bin\Release\net48"));
         }
-
         private async void BtnInstall_Click(object sender, RoutedEventArgs e)
         {
             string target = PathBox.Text.Trim();
@@ -124,7 +115,10 @@ namespace Setup
             ShowPage(PageProgress);
             try
             {
-                await Task.Run(delegate { CopyAll(SourceDir(), target); });
+                if (HasPayload())
+                    await Task.Run(delegate { ExtractPayload(target); });
+                else
+                    await Task.Run(delegate { CopyAll(SourceDir(), target); });
                 File.Copy(Process.GetCurrentProcess().MainModule.FileName,
                     Path.Combine(target, "Uninstaller.exe"), true);
                 WriteUninstallKey(target);
@@ -143,7 +137,40 @@ namespace Setup
                 ShowPage(PageMain);
             }
         }
-
+        private void ExtractPayload(string dst)
+        {
+            using (var stream = System.Reflection.Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("Setup.payload.app.zip"))
+            {
+                using (var zip = new System.IO.Compression.ZipArchive(stream))
+                {
+                    int done = 0;
+                    int total = zip.Entries.Count;
+                    foreach (var entry in zip.Entries)
+                    {
+                        if (entry.FullName.EndsWith("/"))
+                        {
+                            done++;
+                            continue;
+                        }
+                        string dest = Path.Combine(dst, entry.FullName);
+                        Directory.CreateDirectory(Path.GetDirectoryName(dest));
+                        using (var es = entry.Open())
+                        {
+                            using (var fs = File.Create(dest))
+                                es.CopyTo(fs);
+                        }
+                        done++;
+                        int pct = done * 100 / total;
+                        Dispatcher.Invoke(new Action(delegate
+                        {
+                            ProgBar.Value = pct;
+                            ProgStatus.Text = Loc.Get("SetupInstalling") + " " + pct + "%";
+                        }));
+                    }
+                }
+            }
+        }
         private void CopyAll(string src, string dst)
         {
             string[] files = Directory.GetFiles(src, "*", SearchOption.AllDirectories);
@@ -161,7 +188,6 @@ namespace Setup
                 }));
             }
         }
-
         private void WriteUninstallKey(string target)
         {
             using (var key = Registry.LocalMachine.CreateSubKey(
@@ -178,7 +204,6 @@ namespace Setup
                 key.SetValue("NoRepair", 1);
             }
         }
-
         private void MakeShortcuts(string target, bool desktop, bool startmenu)
         {
             try
@@ -212,7 +237,6 @@ namespace Setup
             }
             catch { }
         }
-
         private void RunUninstall()
         {
             try
@@ -238,7 +262,6 @@ namespace Setup
                     @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true)
                     .DeleteValue(AppId, false); }
                 catch { }
-
                 string self = Process.GetCurrentProcess().MainModule.FileName;
                 foreach (string f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
                 {

@@ -25,7 +25,6 @@
 
         <ui:TitleBar Grid.Row="0" Title="SoundCloud Desktop Beta" />
 
-        <!-- Тулбар -->
         <Grid Grid.Row="1" Margin="12,4,12,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -62,7 +61,6 @@
             </StackPanel>
         </Grid>
 
-        <!-- Центр: складной сайдбар + сайт -->
         <Grid Grid.Row="2" Margin="12,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="SidebarCol" Width="Auto"/>
@@ -112,7 +110,6 @@
             <wv2:WebView2 x:Name="Browser" Grid.Column="1"/>
         </Grid>
 
-        <!-- Низ: только трек + звук -->
         <Border Grid.Row="3" Margin="12,8,12,12" Padding="10,8" CornerRadius="10"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
             <DockPanel>

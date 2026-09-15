@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="Setup" Height="420" Width="520"
+        Title="Setup" Height="480" Width="560"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
@@ -18,51 +18,71 @@
 
         <ui:TitleBar x:Name="SetupBar" Grid.Row="0" Title="Setup"/>
 
-        <Grid Grid.Row="1" Margin="20">
-            <!-- Page 1: language -->
-            <StackPanel x:Name="PageLang">
-                <TextBlock Text="SoundCloud Desktop Beta" FontSize="20" FontWeight="SemiBold"/>
-                <TextBlock x:Name="LangLbl" Margin="0,16,0,6"/>
-                <ComboBox x:Name="LangBox" SelectionChanged="LangBox_SelectionChanged"/>
-                <ui:Button x:Name="BtnNext1" Appearance="Primary" HorizontalAlignment="Right"
-                           Margin="0,24,0,0" MinWidth="120" Click="BtnNext1_Click"/>
-            </StackPanel>
-
-            <!-- Page 2: folder + options -->
-            <StackPanel x:Name="PageMain" Visibility="Collapsed">
-                <TextBlock x:Name="PathLbl" Margin="0,0,0,6"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="PathBox" Grid.Column="0" IsReadOnly="True"/>
-                    <ui:Button x:Name="BtnBrowse" Grid.Column="1" Margin="6,0,0,0" Click="BtnBrowse_Click"/>
-                </Grid>
-                <CheckBox x:Name="OptDesktop" Margin="0,14,0,0"/>
-                <CheckBox x:Name="OptStartMenu" Margin="0,6,0,0"/>
-                <CheckBox x:Name="OptLaunch" Margin="0,6,0,0"/>
-                <TextBlock x:Name="WebViewWarn" Margin="0,12,0,0" TextWrapping="Wrap"
-                           Foreground="Orange" Visibility="Collapsed"/>
-                <ui:Button x:Name="BtnWebView" Margin="0,6,0,0" Visibility="Collapsed"
-                           HorizontalAlignment="Left" Click="BtnWebView_Click"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                    <ui:Button x:Name="BtnBack" Margin="0,0,8,0" MinWidth="110" Click="BtnBack_Click"/>
-                    <ui:Button x:Name="BtnInstall" Appearance="Primary" MinWidth="130" Click="BtnInstall_Click"/>
+        <Grid Grid.Row="1">
+            <Grid.Background>
+                <DrawingBrush TileMode="Tile" Viewport="0,0 24,24"
+                              ViewportUnits="Absolute" Stretch="None" Opacity="0.07">
+                    <DrawingBrush.Drawing>
+                        <GeometryDrawing Brush="White">
+                            <GeometryDrawing.Geometry>
+                                <EllipseGeometry Center="3,3" RadiusX="1.5" RadiusY="1.5"/>
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Grid.Background>
+            <StackPanel Margin="28,16,28,20">
+                <StackPanel x:Name="PageLang">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Image Source="sc-icon.png" Width="64" Height="64"/>
+                        <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="SoundCloud" FontSize="26" FontWeight="Bold"/>
+                            <TextBlock Text="DESKTOP BETA • SETUP" FontSize="12" Foreground="#FF5500" FontWeight="Bold"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock x:Name="LangLbl" Margin="0,20,0,6" FontSize="13"/>
+                    <ComboBox x:Name="LangBox" SelectionChanged="LangBox_SelectionChanged" FontSize="13"/>
+                    <ui:Button x:Name="BtnNext1" Appearance="Primary" HorizontalAlignment="Right"
+                               Margin="0,28,0,0" MinWidth="140" Click="BtnNext1_Click"/>
                 </StackPanel>
-            </StackPanel>
 
-            <!-- Page 3: progress -->
-            <StackPanel x:Name="PageProgress" Visibility="Collapsed" VerticalAlignment="Center">
-                <TextBlock x:Name="ProgStatus" Margin="0,0,0,10"/>
-                <ProgressBar x:Name="ProgBar" Height="10" Minimum="0" Maximum="100"/>
-            </StackPanel>
+                <StackPanel x:Name="PageMain" Visibility="Collapsed">
+                    <TextBlock x:Name="PathLbl" Margin="0,0,0,6" FontSize="13"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="PathBox" Grid.Column="0" IsReadOnly="True"/>
+                        <ui:Button x:Name="BtnBrowse" Grid.Column="1" Margin="6,0,0,0" Click="BtnBrowse_Click"/>
+                    </Grid>
+                    <CheckBox x:Name="OptDesktop" Margin="0,16,0,0" FontSize="13"/>
+                    <CheckBox x:Name="OptStartMenu" Margin="0,8,0,0" FontSize="13"/>
+                    <CheckBox x:Name="OptLaunch" Margin="0,8,0,0" FontSize="13"/>
+                    <TextBlock x:Name="WebViewWarn" Margin="0,14,0,0" TextWrapping="Wrap"
+                               Foreground="Orange" Visibility="Collapsed"/>
+                    <ui:Button x:Name="BtnWebView" Margin="0,8,0,0" Visibility="Collapsed"
+                               HorizontalAlignment="Left" Click="BtnWebView_Click"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+                        <ui:Button x:Name="BtnBack" Margin="0,0,8,0" MinWidth="120" Click="BtnBack_Click"/>
+                        <ui:Button x:Name="BtnInstall" Appearance="Primary" MinWidth="150" Click="BtnInstall_Click"/>
+                    </StackPanel>
+                </StackPanel>
 
-            <!-- Page 4: done -->
-            <StackPanel x:Name="PageDone" Visibility="Collapsed" VerticalAlignment="Center">
-                <TextBlock x:Name="DoneText" FontSize="16" TextWrapping="Wrap"/>
-                <ui:Button x:Name="BtnClose" Appearance="Primary" HorizontalAlignment="Right"
-                           Margin="0,24,0,0" MinWidth="120" Click="BtnClose_Click"/>
+                <StackPanel x:Name="PageProgress" Visibility="Collapsed" VerticalAlignment="Center">
+                    <TextBlock x:Name="ProgStatus" Margin="0,0,0,12" FontSize="14"/>
+                    <ProgressBar x:Name="ProgBar" Height="12" Minimum="0" Maximum="100"/>
+                </StackPanel>
+
+                <StackPanel x:Name="PageDone" Visibility="Collapsed" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Image Source="sc-icon.png" Width="48" Height="48"/>
+                        <TextBlock x:Name="DoneText" FontSize="16" Margin="14,0,0,0"
+                                   VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <ui:Button x:Name="BtnClose" Appearance="Primary" HorizontalAlignment="Right"
+                               Margin="0,28,0,0" MinWidth="140" Click="BtnClose_Click"/>
+                </StackPanel>
             </StackPanel>
         </Grid>
     </Grid>
