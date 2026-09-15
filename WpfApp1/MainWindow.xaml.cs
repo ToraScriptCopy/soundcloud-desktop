@@ -251,7 +251,7 @@ window.__scPipUpdate(location.href);})()";
                     Process.GetCurrentProcess().MainModule.FileName);
             }
             catch { }
-            _tray.Text = "SoundCloud Desktop Beta";
+            _tray.Text = "SoundCloud Desktop";
             _tray.DoubleClick += delegate { ShowMain(); };
             BuildTrayMenu();
             _tray.Visible = true;
@@ -351,33 +351,22 @@ window.__scPipUpdate(location.href);})()";
                 VolSlider.Value = Math.Min(100, VolSlider.Value + 5);
             }
         }
-        private static string EngineDir(int engine)
-        {
-            if (engine == 1) return Path.Combine(SecureStore.DataDir, "EBWebView-Edge");
-            if (engine == 2) return Path.Combine(SecureStore.DataDir, "EBWebView-Chrome");
-            return Path.Combine(SecureStore.DataDir, "EBWebView");
-        }
+        private static readonly string EngineArgs =
+            "--disable-features=Translate,OptimizationHints,MediaRouter" +
+            " --autoplay-policy=no-user-gesture-required" +
+            " --renderer-process-limit=1" +
+            " --disable-background-networking --disable-sync --disable-default-apps" +
+            " --no-first-run --no-default-browser-check" +
+            " --disable-component-extensions-with-background-pages --disable-component-update" +
+            " --disable-breakpad --disable-logging --log-level=3" +
+            " --disk-cache-size=134217728";
         private async void InitBrowser()
         {
             try
             {
-                if (_state.Engine < 0 || _state.Engine > 2) _state.Engine = 0;
-                CoreWebView2Environment env = null;
-                try
-                {
-                    var envRes = await Engines.CreateAsync(_state.Engine, EngineDir(_state.Engine));
-                    env = envRes.Env;
-                    if ((_state.Engine == 1 || _state.Engine == 2) && !envRes.Shared)
-                        Snack(Loc.Get("ErrTitle"), Loc.Get("EngineLocked"),
-                            UiControls.ControlAppearance.Caution);
-                }
-                catch
-                {
-                    var fb = await Engines.CreateAsync(0, EngineDir(0));
-                    env = fb.Env;
-                    Snack(Loc.Get("ErrTitle"), Loc.Get("EngineFailed"),
-                        UiControls.ControlAppearance.Caution);
-                }
+                string dir = Path.Combine(SecureStore.DataDir, "EBWebView");
+                var env = await CoreWebView2Environment.CreateAsync(
+                    null, dir, new CoreWebView2EnvironmentOptions(EngineArgs));
                 await Browser.EnsureCoreWebView2Async(env);
                 var settings = Browser.CoreWebView2.Settings;
                 settings.AreDevToolsEnabled = false;

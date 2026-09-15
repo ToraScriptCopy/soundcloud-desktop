@@ -26,7 +26,7 @@ namespace WpfApp1
             catch { }
             try
             {
-                MessageBox.Show(e.Exception.Message, "SoundCloud Desktop Beta",
+                MessageBox.Show(e.Exception.Message, "SoundCloud Desktop",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch { }

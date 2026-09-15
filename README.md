@@ -1,4 +1,4 @@
-# SoundCloud Desktop Beta
+# SoundCloud Desktop
 
 Fan-made Windows client for SoundCloud. The site wrapped in a native Fluent shell, plus a PiP player, global hotkeys, volume that actually sticks, tracker blocking and encrypted local settings.
 

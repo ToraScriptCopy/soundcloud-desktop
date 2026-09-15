@@ -37,7 +37,7 @@
                         <Image Source="sc-icon.png" Width="64" Height="64"/>
                         <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="SoundCloud" FontSize="26" FontWeight="Bold"/>
-                            <TextBlock Text="DESKTOP BETA • SETUP" FontSize="12" Foreground="#FF5500" FontWeight="Bold"/>
+                            <TextBlock Text="DESKTOP • SETUP" FontSize="12" Foreground="#FF5500" FontWeight="Bold"/>
                         </StackPanel>
                     </StackPanel>
                     <TextBlock x:Name="LangLbl" Margin="0,20,0,6" FontSize="13"/>

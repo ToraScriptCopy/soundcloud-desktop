@@ -11,7 +11,7 @@ namespace Setup
 {
     public partial class MainWindow : UiControls.FluentWindow
     {
-        private const string AppName = "SoundCloud Desktop Beta";
+        private const string AppName = "SoundCloud Desktop";
         private const string AppId = "SoundCloudDesktopBeta";
         private const string AppExe = "SoundCloudDesk.exe";
         public MainWindow()
@@ -30,7 +30,7 @@ namespace Setup
             Loc.FillLangCombo(LangBox, "auto");
             PathBox.Text = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                "SoundCloud Desktop Beta");
+                "SoundCloud Desktop");
             OptDesktop.IsChecked = true;
             OptStartMenu.IsChecked = true;
             OptLaunch.IsChecked = true;
@@ -196,7 +196,7 @@ namespace Setup
                 if (key == null) return;
                 key.SetValue("DisplayName", AppName);
                 key.SetValue("DisplayVersion", "1.0");
-                key.SetValue("Publisher", "SoundCloud Desktop Beta");
+                key.SetValue("Publisher", "SoundCloud Desktop");
                 key.SetValue("InstallLocation", target);
                 key.SetValue("DisplayIcon", Path.Combine(target, AppExe));
                 key.SetValue("UninstallString", "\"" + Path.Combine(target, "Uninstaller.exe") + "\" /uninstall");

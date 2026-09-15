@@ -11,7 +11,6 @@ namespace WpfApp1
     public sealed class AppState
     {
         [DataMember] public int Theme { get; set; }
-        [DataMember] public int Engine { get; set; }
         [DataMember] public double Volume { get; set; }
         [DataMember] public bool Muted { get; set; }
         [DataMember] public string LastUrl { get; set; }
@@ -32,7 +31,6 @@ namespace WpfApp1
         public AppState()
         {
             Theme = 0;
-            Engine = 0;
             Volume = 0.8;
             Muted = false;
             LastUrl = "https://soundcloud.com/";
@@ -54,7 +52,6 @@ namespace WpfApp1
         public void Normalize()
         {
             if (Theme < 0 || Theme >= Themes.Count) Theme = 0;
-            if (Engine < 0 || Engine > 3) Engine = 0;
             if (Volume < 0) Volume = 0;
             if (Volume > 1) Volume = 1;
             if (string.IsNullOrWhiteSpace(LastUrl)) LastUrl = "https://soundcloud.com/";

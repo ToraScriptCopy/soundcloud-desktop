@@ -7,8 +7,8 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>installer-soundcloud</AssemblyName>
     <RootNamespace>Setup</RootNamespace>
-    <Product>SoundCloud Desktop Beta Setup</Product>
-    <Version>1.3.0</Version>
+    <Product>SoundCloud Desktop Setup</Product>
+    <Version>1.4.0</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\WpfApp1\assets\icon.ico</ApplicationIcon>
     <Nullable>disable</Nullable>
