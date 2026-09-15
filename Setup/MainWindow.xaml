@@ -61,8 +61,10 @@
                     <CheckBox x:Name="OptLaunch" Margin="0,8,0,0" FontSize="13"/>
                     <TextBlock x:Name="WebViewWarn" Margin="0,14,0,0" TextWrapping="Wrap"
                                Foreground="Orange" Visibility="Collapsed"/>
-                    <ui:Button x:Name="BtnWebView" Margin="0,8,0,0" Visibility="Collapsed"
-                               HorizontalAlignment="Left" Click="BtnWebView_Click"/>
+                <ui:Button x:Name="BtnWebView" Margin="0,8,0,0" Visibility="Collapsed"
+                           HorizontalAlignment="Left" Click="BtnWebView_Click"/>
+                <TextBlock x:Name="NoFilesWarn" Margin="0,8,0,0" TextWrapping="Wrap"
+                           Foreground="Orange" Visibility="Collapsed"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
                         <ui:Button x:Name="BtnBack" Margin="0,0,8,0" MinWidth="120" Click="BtnBack_Click"/>
                         <ui:Button x:Name="BtnInstall" Appearance="Primary" MinWidth="150" Click="BtnInstall_Click"/>

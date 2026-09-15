@@ -36,6 +36,26 @@ namespace Setup
             OptLaunch.IsChecked = true;
             ApplyLoc();
             CheckWebView();
+            ValidateSource();
+            ILog("start version=" + GetType().Assembly.GetName().Version);
+        }
+        private void ILog(string m)
+        {
+            try
+            {
+                File.AppendAllText(
+                    Path.Combine(Path.GetTempPath(), "scd-setup-install.log"),
+                    DateTime.Now.ToString("HH:mm:ss") + " " + m + "\r\n");
+            }
+            catch { }
+        }
+        private void ValidateSource()
+        {
+            bool ok = HasPayload() || Directory.Exists(SourceDir());
+            ILog("validate payload=" + HasPayload() + " appdir=" + Directory.Exists(SourceDir()));
+            NoFilesWarn.Text = Loc.Get("SetupNoFiles");
+            NoFilesWarn.Visibility = ok ? Visibility.Collapsed : Visibility.Visible;
+            BtnInstall.IsEnabled = ok;
         }
         private void ApplyLoc()
         {
@@ -55,6 +75,10 @@ namespace Setup
             BtnWebView.Content = Loc.Get("SetupGetWebView");
             DoneText.Text = Loc.Get("SetupDone");
             BtnClose.Content = Loc.Get("SetupClose");
+            NoFilesWarn.Text = Loc.Get("SetupNoFiles");
+            string ver = GetType().Assembly.GetName().Version.ToString(3);
+            Title = AppName + " — " + Loc.Get("SetupTitle") + " v" + ver;
+            SetupBar.Title = Title;
         }
         private void LangBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -115,14 +139,19 @@ namespace Setup
             ShowPage(PageProgress);
             try
             {
-                if (HasPayload())
+                ILog("install to=" + target);
+                bool payload = HasPayload();
+                ILog("payload=" + payload);
+                if (payload)
                     await Task.Run(delegate { ExtractPayload(target); });
                 else
                     await Task.Run(delegate { CopyAll(SourceDir(), target); });
+                ILog("files done, writing uninstaller+registry+shortcuts");
                 File.Copy(Process.GetCurrentProcess().MainModule.FileName,
                     Path.Combine(target, "Uninstaller.exe"), true);
                 WriteUninstallKey(target);
                 MakeShortcuts(target, OptDesktop.IsChecked == true, OptStartMenu.IsChecked == true);
+                ILog("install OK");
                 ShowPage(PageDone);
                 if (OptLaunch.IsChecked == true)
                 {
@@ -132,6 +161,7 @@ namespace Setup
             }
             catch (Exception ex)
             {
+                ILog("FAILED: " + ex);
                 ProgStatus.Text = ex.Message;
                 BtnInstall.IsEnabled = true;
                 ShowPage(PageMain);
