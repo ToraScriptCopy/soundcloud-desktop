@@ -247,13 +247,13 @@ MIT. See [LICENSE](https://github.com/ToraScriptCopy/soundcloud-desktop/blob/mai
 
 ## Verify downloads
 
-Scanned with VirusTotal on release day (v3.3). Compare the hash before running.
+Scanned with VirusTotal on release day (v3.5). Compare the hash before running.
 
 | File | SHA-256 | Detections | Report |
 |---|---|---|---|
-| SoundCloudDesktopBeta-Portable-v3.3.zip | `f10a235a902decdd2528a1ac9ea7e38f6f3f0ca1a32affe4e0ccd64be32e8904` | 0/67 | [report](https://www.virustotal.com/gui/file/f10a235a902decdd2528a1ac9ea7e38f6f3f0ca1a32affe4e0ccd64be32e8904) |
-| SoundCloudDesktopBeta-Portable-AlternativeUI-v3.3.zip | `74ca47b850a7bd87eca1c6318e2522e9cfe306037c1e6426b8d2c0c978023a27` | 0/66 | [report](https://www.virustotal.com/gui/file/74ca47b850a7bd87eca1c6318e2522e9cfe306037c1e6426b8d2c0c978023a27) |
-| SoundCloudLight.exe | `2d1a67fe6f40738fd8dbd74b76a8c6dccc720cb3b00e255fec7184d2bfecfb00` | 1/68 | [report](https://www.virustotal.com/gui/file/2d1a67fe6f40738fd8dbd74b76a8c6dccc720cb3b00e255fec7184d2bfecfb00) |
-| SoundCloudLight-x86.exe | `68208049d5ce7575752b53249cbab5df58daaa4ea6d4c39f1bd74ae6f48fae4d` | 8/70 | [report](https://www.virustotal.com/gui/file/68208049d5ce7575752b53249cbab5df58daaa4ea6d4c39f1bd74ae6f48fae4d) |
+| SoundCloudDesktopBeta-Portable-v3.5.zip | `6472b89f01ae5cb85b1ef13721aaa75f9d50c94e781dc23f84b1cff509791b1c` | 0/65 | [report](https://www.virustotal.com/gui/file/6472b89f01ae5cb85b1ef13721aaa75f9d50c94e781dc23f84b1cff509791b1c) |
+| SoundCloudDesktopBeta-Portable-AlternativeUI-v3.5.zip | `0a4eca03c7b4d6010f26ce2cca2800bf2e62e166535519ecf36b5c947907db0c` | 0/65 | [report](https://www.virustotal.com/gui/file/0a4eca03c7b4d6010f26ce2cca2800bf2e62e166535519ecf36b5c947907db0c) |
+| SoundCloudLight.exe | `46c096a06f1c86a9d17d4c3bebbe05558cbab735b8b8369099da4375b16e595f` | 1/68 | [report](https://www.virustotal.com/gui/file/46c096a06f1c86a9d17d4c3bebbe05558cbab735b8b8369099da4375b16e595f) |
+| SoundCloudLight-x86.exe | `09380395bda107f20d79c51220a455b93205e03aa4ba0f79643abf96f68f94e7` | 9/70 | [report](https://www.virustotal.com/gui/file/09380395bda107f20d79c51220a455b93205e03aa4ba0f79643abf96f68f94e7) |
 
-The Light builds trip a few heuristic engines (packed Python apps always do, Microsoft files them as Wacatac). The sources are open, compare hashes before running.
+The Light builds trip a few heuristic engines (packed Python apps always do). The sources are open, compare hashes before running.

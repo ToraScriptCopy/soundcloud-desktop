@@ -283,10 +283,10 @@
 
   /* ---------- verify: hashes with copy buttons, real report links ---------- */
   var VERDICTS = {
-    'f10a235a902decdd2528a1ac9ea7e38f6f3f0ca1a32affe4e0ccd64be32e8904': { m: 0, total: 67 },
-    '74ca47b850a7bd87eca1c6318e2522e9cfe306037c1e6426b8d2c0c978023a27': { m: 0, total: 66 },
-    '2d1a67fe6f40738fd8dbd74b76a8c6dccc720cb3b00e255fec7184d2bfecfb00': { m: 1, total: 68 },
-    '68208049d5ce7575752b53249cbab5df58daaa4ea6d4c39f1bd74ae6f48fae4d': { m: 8, total: 70 }
+    '6472b89f01ae5cb85b1ef13721aaa75f9d50c94e781dc23f84b1cff509791b1c': { m: 0, total: 65 },
+    '0a4eca03c7b4d6010f26ce2cca2800bf2e62e166535519ecf36b5c947907db0c': { m: 0, total: 65 },
+    '46c096a06f1c86a9d17d4c3bebbe05558cbab735b8b8369099da4375b16e595f': { m: 1, total: 68 },
+    '09380395bda107f20d79c51220a455b93205e03aa4ba0f79643abf96f68f94e7': { m: 9, total: 70 }
   };
   function loadHashes() {
     var box = document.getElementById('scanList');
