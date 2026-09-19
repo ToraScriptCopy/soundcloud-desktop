@@ -18,6 +18,7 @@
 
 </div>
 
+
 ## 📦 Download
 
 Grab the latest release on the [Releases page](https://github.com/ToraScriptCopy/soundcloud-desktop/releases). Everything is portable: unpack and run, no install, no admin rights.
@@ -30,6 +31,64 @@ Grab the latest release on the [Releases page](https://github.com/ToraScriptCopy
 
 The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. Alt and Ultra Light on Windows need nothing extra. On Linux, Alt needs basic desktop libs (`libnss3`, `libatk`, `libcups`), Ultra Light needs WebKitGTK (`libwebkit2gtk-4.1-0`).
 
+```mermaid
+flowchart TB
+    SC[soundcloud.com<br/>Official Web Application]
+
+    SC --> DECISION{How to deliver<br/>as desktop experience?}
+
+    DECISION -->|Native Windows shell| CLASSIC
+    DECISION -->|Full custom frontend| ALTERNATIVE
+    DECISION -->|Absolute minimalism| ULTRA
+
+    subgraph CLASSIC[1. Classic — Minimal Native Shell]
+        direction TB
+        C1[WPF / WinUI 3 + WebView2]
+        C2[Thin host window<br/>navigates to soundcloud.com]
+        C3[~3 MB framework-dependent<br/>or ~80-120 MB self-contained]
+        C4[System media keys, tray,<br/>custom title bar]
+        C5[Pros: tiny size, native feel,<br/>instant site updates, low maintenance]
+        C6[Cons: Windows-only,<br/>limited offline, depends on WebView2]
+    end
+
+    subgraph ALTERNATIVE[2. Alternative UI — Complete Redesign]
+        direction TB
+        A1[Electron / Tauri + React + TypeScript]
+        A2[Radix UI / shadcn + Tailwind]
+        A3[Fully reimplements feed, player, library]
+        A4[Base ~150-200 MB + 20 extras<br/>total often 250-400 MB]
+        A5[Extras: EQ, gapless, multi-account,<br/>themes, mini-player, local import,<br/>Discord presence, download manager,<br/>smart playlists, sleep timer, etc.]
+        A6[Pros: full UX control, cross-platform,<br/>rich desktop features, offline potential]
+        A7[Cons: large size, high maintenance,<br/>API breakage risk, heavier RAM]
+    end
+
+    subgraph ULTRA[3. Ultra Light — Single Binary]
+        direction TB
+        U1[Native WebView or minimal Tauri/Rust]
+        U2[Opens soundcloud.com directly]
+        U3[Single executable, often under 15 MB]
+        U4[Almost zero custom UI code]
+        U5[Pros: smallest size, zero UI maintenance,<br/>always up-to-date, simple to ship]
+        U6[Cons: almost no added value,<br/>limited integration, hard to differentiate]
+    end
+
+    CLASSIC --> COMPARE
+    ALTERNATIVE --> COMPARE
+    ULTRA --> COMPARE
+
+    subgraph COMPARE[Decision Matrix]
+        direction LR
+        M1[Size<br/>Classic / Ultra best<br/>Alternative largest]
+        M2[Features<br/>Alternative richest<br/>Classic moderate<br/>Ultra minimal]
+        M3[Maintenance<br/>Ultra / Classic low<br/>Alternative high]
+        M4[Platform<br/>Alternative cross-platform<br/>Classic Windows-focused]
+    end
+
+    COMPARE --> FINAL{Recommended}
+    FINAL --> R1[Tiny Windows app → Classic]
+    FINAL --> R2[Rich desktop experience → Alternative UI]
+    FINAL --> R3[Clean minimal launcher → Ultra Light]
+'''
 
 
 - **Classic (WPF)** - the main build. Fluent shell, Now playing popup, PiP player, hotkeys, extensions, 14 themes, encrypted local settings.
