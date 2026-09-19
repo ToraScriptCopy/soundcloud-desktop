@@ -98,10 +98,10 @@ namespace WpfApp1
             + "var els=document.querySelectorAll(BS);"
             + "for(var i=0;i<els.length;i++){if(hasPhrase(els[i])&&!hasAuth(els[i]))hideRoot(els[i]);}"
             + "}catch(e){}}"
-            + "function sweep(){sweepText();sweepBoxes();}"
-            + "var t=null;function sch(){if(t)return;t=setTimeout(function(){t=null;sweep();},300);}"
+            + "function sweep(){if(document.hidden)return;sweepText();sweepBoxes();}"
+            + "var t=null;function sch(){if(t||document.hidden)return;t=setTimeout(function(){t=null;sweep();},800);}"
             + "try{new MutationObserver(sch).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}"
-            + "sweep();setInterval(sweep,3000);})()";
+            + "sweep();setInterval(sweep,8000);})()";
 
         public const string RdHeader =
             "header.header{background:#191919!important;border-bottom:1px solid #2a2a2a!important;box-shadow:0 1px 0 rgba(0,0,0,.4)!important}"

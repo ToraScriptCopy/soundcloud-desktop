@@ -229,11 +229,16 @@ namespace WpfApp1
             SaveAllState();
         }
         private bool _allowExit;
+        public bool KeepPlaying()
+        {
+            try { return _state == null || _state.PlayAfterClose != false; }
+            catch { return true; }
+        }
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
             try
             {
-                if (_state.TrayHide && !_allowExit)
+                if (KeepPlaying() && !_allowExit)
                 {
                     e.Cancel = true;
                     Hide();
@@ -835,6 +840,11 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             if (Browser == null) return;
             if (WindowState == WindowState.Minimized)
             {
+                if (_state != null && _state.TrayHide)
+                {
+                    Hide();
+                    return;
+                }
                 Browser.Visibility = Visibility.Collapsed;
                 _poll.Interval = TimeSpan.FromSeconds(3);
             }

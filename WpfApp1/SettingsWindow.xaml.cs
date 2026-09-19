@@ -30,6 +30,8 @@ namespace WpfApp1
             HideHeaderSwitch2.IsChecked = _state.HideHeader;
             TopmostSwitch.IsChecked = _state.Topmost;
             TrayHideSwitch.IsChecked = _state.TrayHide;
+            try { PlayAfterCloseSwitch.IsChecked = _state.PlayAfterClose != false; }
+            catch { PlayAfterCloseSwitch.IsChecked = true; }
             AutostartSwitch.IsChecked = _state.Autostart;
             try { PinStartSwitch.IsChecked = System.IO.File.Exists(StartMenuLink()); }
             catch { PinStartSwitch.IsChecked = false; }
@@ -102,6 +104,7 @@ namespace WpfApp1
             HideHeaderSwitch2.Content = Loc.Get("HideHeader");
             TopmostSwitch.Content = Loc.Get("TopmostMain");
             TrayHideSwitch.Content = Loc.Get("TrayHide");
+            PlayAfterCloseSwitch.Content = Loc.Get("PlayAfterClose");
             AutostartSwitch.Content = Loc.Get("Autostart");
             PinStartSwitch.Content = Loc.Get("PinStart");
             AdBlockSwitch.Content = Loc.Get("AdBlockLbl");
@@ -157,6 +160,12 @@ namespace WpfApp1
         {
             if (!_initialized) return;
             _state.TrayHide = TrayHideSwitch.IsChecked == true;
+            _owner.SaveAllState();
+        }
+        private void PlayAfterCloseSwitch_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_initialized) return;
+            _state.PlayAfterClose = PlayAfterCloseSwitch.IsChecked != false;
             _owner.SaveAllState();
         }
         private void AutostartSwitch_Changed(object sender, RoutedEventArgs e)

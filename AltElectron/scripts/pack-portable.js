@@ -82,6 +82,27 @@ const srcExe = path.join(out, isWinTarget ? 'electron.exe' : 'electron');
 const dstExe = path.join(out, isWinTarget ? 'SoundCloudDeskAlt.exe' : 'SoundCloudDeskAlt');
 fs.renameSync(srcExe, dstExe);
 if (!isWinTarget) fs.chmodSync(dstExe, 0o755);
+if (isWinTarget) {
+  // Brand the exe: our icon plus real version metadata instead of Electron's.
+  try {
+    const { rcedit } = require('rcedit');
+    const ver = require(path.join(root, 'package.json')).version + '.0';
+    rcedit(dstExe, {
+      icon: path.join(root, 'assets', 'icon.ico'),
+      'file-version': ver,
+      'product-version': ver,
+      'version-string': {
+        CompanyName: 'SoundCloud Desktop',
+        FileDescription: 'SoundCloud Desktop Alt',
+        ProductName: 'SoundCloud Desktop Alt',
+        InternalName: 'SoundCloudDeskAlt',
+        OriginalFilename: 'SoundCloudDeskAlt.exe',
+      },
+    }).then(
+      () => console.log('exe branded'),
+      (e) => console.error('rcedit failed: ' + (e && e.message)));
+  } catch (e) { console.error('rcedit failed: ' + e.message); }
+}
 // 4. App files (main process + built UI + assets, no node_modules needed at runtime)
 fs.mkdirSync(appOut, { recursive: true });
 fs.copyFileSync(path.join(root, 'package.json'), path.join(appOut, 'package.json'));

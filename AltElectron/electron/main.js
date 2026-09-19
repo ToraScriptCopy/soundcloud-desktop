@@ -6,7 +6,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session
 const path = require('path');
 const fs = require('fs');
 
-const APP_VERSION = '3.3.0';
+const APP_VERSION = '3.4.0';
 const HOME_URL = 'https://soundcloud.com/';
 const TOP_H = 52, BOTTOM_H = 46, SIDE_W = 210;
 
@@ -23,6 +23,7 @@ function defaultStore() {
     adblock: false, anims: true, redesign: true,
     rd: { rdCards: true, rdButtons: true, rdHeader: true, rdPlayer: true, rdComments: true, rdSidebar: true, rdInputs: true, rdPopups: true },
     playerPopup: true, trayHide: true, autostart: false, sidebarOpen: true,
+    playAfterClose: true,
     extensions: [], lastUrl: HOME_URL, volume: 0.8, muted: false,
     speed: 1, repeatOne: false, notify: false, zoom: 1,
     recent: [], links: [], startMin: false, bossKey: false, alwaysOnTop: false,
@@ -106,7 +107,6 @@ function ev(type,el){try{el.dispatchEvent(new PointerEvent(type,{bubbles:true,ca
 ev('pointerover',w);ev('pointerenter',w);ev('pointerdown',w);ev('pointermove',document);ev('pointerup',document);
 return 'ok';}
 var r1=setSlider(v);
-try{if(!window.__scVolObs){window.__scVolObs=new MutationObserver(function(muts){muts.forEach(function(mu){if(!mu.addedNodes)return;for(var i=0;i<mu.addedNodes.length;i++){var nd=mu.addedNodes[i];if(!nd||!nd.querySelectorAll)continue;try{nd.querySelectorAll('audio,video').forEach(function(m){try{m.volume=window.__scVol;if(window.__scSpeed&&window.__scSpeed!==1)m.playbackRate=window.__scSpeed;}catch(e){}});}catch(e){}}});});window.__scVolObs.observe(document.documentElement,{childList:true,subtree:true});}}catch(e){}
 return r1;})(${v})`;
 }
 
@@ -137,10 +137,10 @@ function sweepBoxes(){try{
 var els=document.querySelectorAll(BS);
 for(var i=0;i<els.length;i++){if(hasPhrase(els[i])&&!hasAuth(els[i]))hideRoot(els[i]);}
 }catch(e){}}
-function sweep(){sweepText();sweepBoxes();}
-var t=null;function sch(){if(t)return;t=setTimeout(function(){t=null;sweep();},300);}
+function sweep(){if(document.hidden)return;sweepText();sweepBoxes();}
+var t=null;function sch(){if(t||document.hidden)return;t=setTimeout(function(){t=null;sweep();},800);}
 try{new MutationObserver(sch).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
-sweep();setInterval(sweep,3000);})()`;
+sweep();setInterval(sweep,8000);})()`;
 
 /* ---------------- site CSS fragments (same as the WPF build) ---------------- */
 const SCROLL_CSS =
@@ -402,8 +402,16 @@ function createMain() {
   });
 
   mainWin.on('resize', layoutSiteView);
+  mainWin.on('hide', () => setPollMs(4000));
+  mainWin.on('show', () => setPollMs(1500));
+  mainWin.on('minimize', () => {
+    try { if (store.trayHide && mainWin) mainWin.hide(); } catch (e) { /* ignore */ }
+    setPollMs(4000);
+  });
+  mainWin.on('restore', () => setPollMs(1500));
   mainWin.on('close', (e) => {
-    if (store.trayHide && !allowExit) { e.preventDefault(); mainWin.hide(); }
+    const keep = store.playAfterClose !== false;
+    if (keep && !allowExit) { e.preventDefault(); mainWin.hide(); }
   });
   mainWin.on('closed', () => { mainWin = null; siteView = null; });
 }
@@ -545,8 +553,18 @@ function pushRecent(title, artist, url) {
   pushStore();
 }
 
+let pollTimer = null;
+let pollMs = 1500;
+function setPollMs(ms) {
+  if (ms === pollMs) return;
+  pollMs = ms;
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  pollTimer = setInterval(pollOnce, pollMs);
+}
 function startPoll() {
-  setInterval(async () => {
+  setPollMs(mainWin && !mainWin.isVisible() ? 4000 : 1500);
+}
+async function pollOnce() {
     const wc = siteWC();
     if (!wc) return;
     try {
@@ -565,11 +583,10 @@ function startPoll() {
       if (mainWin) mainWin.webContents.send('track', info);
       trackTooltip(title, playing);
       if (playing) {
-        memSec += 1.5;
-        if (store.speed && store.speed !== 1) wc.executeJavaScript(speedJs(store.speed)).catch(() => {});
+        memSec += pollMs / 1000;
         if (store.repeatOne) wc.executeJavaScript(REPEAT_JS).catch(() => {});
         if (store.sleep > 0) {
-          sleepLeft -= 1.5;
+          sleepLeft -= pollMs / 1000;
           if (sleepLeft <= 0) {
             store.sleep = 0; sleepLeft = 0; saveStore();
             wc.executeJavaScript(PAUSE_JS).catch(() => {});
@@ -582,6 +599,8 @@ function startPoll() {
         store.stats.seconds = (store.stats.seconds || 0) + memSec;
         memSec = 0;
         saveStore();
+        applyVolume();
+        if (store.speed && store.speed !== 1) wc.executeJavaScript(speedJs(store.speed)).catch(() => {});
         pushRecent(title, artist, wc.getURL());
         if (store.notify) notifyTrack(title, artist);
         if (store.playerPopup && playerWin && !playerWin.isVisible()) playerWin.show();
@@ -589,7 +608,6 @@ function startPoll() {
       wasPlaying = playing;
       lastTrackKey = key;
     } catch (e) { /* page not ready */ }
-  }, 1500);
 }
 
 function updateJumpList() {
@@ -650,13 +668,16 @@ async function loadExtensions() {
 }
 
 function setupAdblock() {
+  // One listener for the whole session. shouldBlock() returns false
+  // immediately while the toggle is off, so idle cost is one call.
   const ses = session.fromPartition(PARTITION);
-  ses.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => {
-    try {
-      if (shouldBlock(details.url)) { blockCount++; return callback({ cancel: true }); }
-    } catch (e) { /* ignore */ }
-    callback({});
-  });
+  ses.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, adblockListener);
+}
+function adblockListener(details, callback) {
+  try {
+    if (shouldBlock(details.url)) { blockCount++; return callback({ cancel: true }); }
+  } catch (e) { /* ignore */ }
+  callback({});
 }
 
 function cmpVer(a, b) {
@@ -841,6 +862,7 @@ const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) { app.quit(); }
 else {
   app.on('second-instance', (_e, argv) => {
+    logLine('second instance, restoring main window');
     const u = openUrlArg(argv);
     if (u) openArgUrl(u);
     else showMain();

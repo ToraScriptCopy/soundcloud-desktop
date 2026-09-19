@@ -34,6 +34,8 @@
                                  Checked="TopmostSwitch_Changed" Unchecked="TopmostSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="TrayHideSwitch" Margin="0,6,0,0"
                                  Checked="TrayHideSwitch_Changed" Unchecked="TrayHideSwitch_Changed"/>
+                <ui:ToggleSwitch x:Name="PlayAfterCloseSwitch" Margin="0,6,0,0"
+                                 Checked="PlayAfterCloseSwitch_Changed" Unchecked="PlayAfterCloseSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="AutostartSwitch" Margin="0,6,0,0"
                                  Checked="AutostartSwitch_Changed" Unchecked="AutostartSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="PinStartSwitch" Margin="0,6,0,0"

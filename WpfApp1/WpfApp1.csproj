@@ -9,8 +9,8 @@
     <RootNamespace>WpfApp1</RootNamespace>
     <Product>SoundCloud Desktop</Product>
     <AssemblyTitle>SoundCloud Desktop</AssemblyTitle>
-    <Version>3.3.0</Version>
-    <FileVersion>3.3.0.0</FileVersion>
+    <Version>3.4.0</Version>
+    <FileVersion>3.4.0.0</FileVersion>
     <ApplicationIcon>assets\icon.ico</ApplicationIcon>
     <LangVersion>7.3</LangVersion>
     <Nullable>disable</Nullable>
