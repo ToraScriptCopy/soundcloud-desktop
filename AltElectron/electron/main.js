@@ -1,17 +1,17 @@
-/* SoundCloud Desktop Alt 1.9.0 - Electron shell with real Radix Themes windows.
-   Main window loads soundcloud.com and injects the shared ReDesign CSS/JS.
-   Shell windows (player, settings) are React + @radix-ui/themes. */
+/* SoundCloud Desktop Alt 2.0 - Electron shell with real Radix Themes UI.
+   Main window is a Radix shell (nav, sidebar, bottom bar) around a
+   WebContentsView that loads soundcloud.com with the shared ReDesign CSS/JS. */
 'use strict';
-const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session, shell, WebContentsView } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 const HOME_URL = 'https://soundcloud.com/';
+const TOP_H = 52, BOTTOM_H = 46, SIDE_W = 210;
 
 /* ---------------- logging ---------------- */
-function logDir() { return app.getPath('userData'); }
 function logLine(m) {
-  try { fs.appendFileSync(path.join(logDir(), 'alt.log'), new Date().toISOString() + ' ' + m + '\n'); }
+  try { fs.appendFileSync(path.join(app.getPath('userData'), 'alt.log'), new Date().toISOString() + ' ' + m + '\n'); }
   catch (e) { /* ignore */ }
 }
 
@@ -21,7 +21,7 @@ function defaultStore() {
   return {
     adblock: false, anims: true, redesign: true,
     rd: { rdCards: true, rdButtons: true, rdHeader: true, rdPlayer: true, rdComments: true, rdSidebar: true, rdInputs: true, rdPopups: true },
-    playerPopup: true, trayHide: true, autostart: false,
+    playerPopup: true, trayHide: true, autostart: false, sidebarOpen: true,
     extensions: [], lastUrl: HOME_URL, volume: 0.8, muted: false,
   };
 }
@@ -247,12 +247,13 @@ function shouldBlock(u) {
 }
 
 /* ---------------- windows ---------------- */
-let mainWin = null, playerWin = null, settingsWin = null, tray = null;
+let mainWin = null, siteView = null, playerWin = null, settingsWin = null, tray = null;
 let allowExit = false;
 let wasPlaying = false, lastTrackKey = '';
+let pipWins = [];
 
 const PARTITION = 'persist:scd';
-const appDir = __dirname.endsWith('electron') || __dirname.endsWith('electron/')
+const appDir = (__dirname.endsWith('electron') || __dirname.endsWith('electron/'))
   ? path.join(__dirname, '..') : __dirname;
 function asset(name) { return path.join(appDir, 'assets', name); }
 function uiFile(name) { return path.join(appDir, 'dist', name); }
@@ -264,39 +265,96 @@ function showMain() {
   mainWin.focus();
 }
 
+function siteWC() { return siteView ? siteView.webContents : null; }
+
+function layoutSiteView() {
+  if (!mainWin || !siteView) return;
+  try {
+    const [w, h] = mainWin.getContentSize();
+    const x = store.sidebarOpen === false ? 0 : SIDE_W;
+    siteView.setBounds({ x, y: TOP_H, width: Math.max(200, w - x), height: Math.max(200, h - TOP_H - BOTTOM_H) });
+  } catch (e) { /* ignore */ }
+}
+
+function sendNavState() {
+  const wc = siteWC();
+  if (!wc || !mainWin) return;
+  try {
+    mainWin.webContents.send('nav-state', {
+      url: wc.getURL(), canBack: wc.canGoBack(), canFwd: wc.canGoForward(),
+    });
+  } catch (e) { /* ignore */ }
+}
+
+function injectSite() {
+  const wc = siteWC();
+  if (!wc) return;
+  wc.executeJavaScript(cssJs(buildCss())).catch(() => {});
+  wc.executeJavaScript(PROMO_JS).catch(() => {});
+}
+
 function createMain() {
   mainWin = new BrowserWindow({
     width: 1180, height: 760, minWidth: 860, minHeight: 560,
     title: 'SoundCloud Desktop Alt',
     autoHideMenuBar: true,
     icon: asset('icon.ico'),
-    webPreferences: { partition: PARTITION },
+    webPreferences: { preload: path.join(__dirname, 'preload-shell.js'), contextIsolation: true },
   });
-  mainWin.loadURL(store.lastUrl || HOME_URL);
+  mainWin.loadFile(uiFile('shell.html'));
 
-  mainWin.webContents.setWindowOpenHandler(({ url }) => {
+  siteView = new WebContentsView({ webPreferences: { partition: PARTITION } });
+  mainWin.contentView.addChildView(siteView);
+  layoutSiteView();
+  siteView.webContents.loadURL(store.lastUrl || HOME_URL);
+
+  siteView.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http://') || url.startsWith('https://')) openAuth(url);
     return { action: 'deny' };
   });
 
-  const inject = () => {
-    if (!mainWin) return;
-    mainWin.webContents.executeJavaScript(cssJs(buildCss())).catch(() => {});
-    mainWin.webContents.executeJavaScript(PROMO_JS).catch(() => {});
-  };
-  mainWin.webContents.on('did-finish-load', () => { inject(); applyVolume(); });
-  mainWin.webContents.on('did-navigate-in-page', () => { inject(); });
+  siteView.webContents.on('did-finish-load', () => { injectSite(); applyVolume(); sendNavState(); });
+  siteView.webContents.on('did-navigate-in-page', () => { injectSite(); sendNavState(); });
+  siteView.webContents.on('did-navigate', () => { sendNavState(); });
 
+  mainWin.on('resize', layoutSiteView);
   mainWin.on('close', (e) => {
     if (store.trayHide && !allowExit) { e.preventDefault(); mainWin.hide(); }
   });
-  mainWin.on('closed', () => { mainWin = null; });
+  mainWin.on('closed', () => { mainWin = null; siteView = null; });
+}
+
+function widgetUrl(pageUrl, autoplay) {
+  return 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(pageUrl)
+    + '&color=%23f76b15&auto_play=' + (autoplay ? 'true' : 'false')
+    + '&hide_related=false&show_comments=true&show_user=true'
+    + '&show_reposts=false&show_teaser=true&visual=true';
+}
+
+function openPip(pageUrl) {
+  let url = (pageUrl || '').trim();
+  if (!url) {
+    const wc = siteWC();
+    if (wc) url = wc.getURL();
+  }
+  if (!url || !url.startsWith('http')) return;
+  try {
+    const w = new BrowserWindow({
+      width: 440, height: 540, minWidth: 280, minHeight: 300,
+      title: 'PiP player', alwaysOnTop: true, autoHideMenuBar: true,
+      icon: asset('icon.ico'),
+      webPreferences: { partition: PARTITION },
+    });
+    w.loadURL(widgetUrl(url, true));
+    w.on('closed', () => { pipWins = pipWins.filter((x) => x !== w); });
+    pipWins.push(w);
+  } catch (e) { logLine('pip failed: ' + e.message); }
 }
 
 function openAuth(url) {
   const w = new BrowserWindow({
     width: 480, height: 640, title: 'SoundCloud',
-    autoHideMenuBar: true, parent: mainWin || undefined, modal: false,
+    autoHideMenuBar: true, parent: mainWin || undefined,
     icon: asset('icon.ico'),
     webPreferences: { partition: PARTITION },
   });
@@ -349,24 +407,26 @@ function applyAutostart() {
 }
 
 function applyVolume() {
-  if (!mainWin) return;
+  const wc = siteWC();
+  if (!wc) return;
   const v = store.muted ? 0 : store.volume;
-  try { mainWin.webContents.setAudioMuted(!!store.muted); } catch (e) { /* ignore */ }
-  mainWin.webContents.executeJavaScript(volumeJs(v)).catch(() => {});
+  try { wc.setAudioMuted(!!store.muted); } catch (e) { /* ignore */ }
+  wc.executeJavaScript(volumeJs(v)).catch(() => {});
 }
 
 function fmtTime(sec) {
-  sec = Math.max(0, sec | 0);
+  sec = Math.max(0, (parseInt(sec, 10) || 0));
   const h = (sec / 3600) | 0, m = ((sec % 3600) / 60) | 0, s = sec % 60;
   const p = (n) => (n < 10 ? '0' + n : '' + n);
   return h > 0 ? h + ':' + p(m) + ':' + p(s) : m + ':' + p(s);
 }
 
 async function clickPlayer(js) {
-  if (!mainWin) return 'no-btn';
+  const wc = siteWC();
+  if (!wc) return 'no-btn';
   for (let i = 0; i < 3; i++) {
     try {
-      const r = await mainWin.webContents.executeJavaScript(js);
+      const r = await wc.executeJavaScript(js);
       if (r === 'playing' || r === 'paused' || r === 'ok') return r;
     } catch (e) { /* ignore */ }
     await new Promise((r) => setTimeout(r, 300));
@@ -376,18 +436,21 @@ async function clickPlayer(js) {
 
 function startPoll() {
   setInterval(async () => {
-    if (!mainWin) return;
+    const wc = siteWC();
+    if (!wc) return;
     try {
-      const raw = await mainWin.webContents.executeJavaScript(POLL_JS);
+      const raw = await wc.executeJavaScript(POLL_JS);
       const p = String(raw).split('|');
       if (p.length < 6) return;
       const title = decodeURIComponent(p[2] || '');
       const playing = p[3] === '1';
       const art = decodeURIComponent(p[4] || '');
       const artist = decodeURIComponent(p[5] || '');
-      const time = fmtTime(parseInt(p[0], 10)) + ' / ' + fmtTime(parseInt(p[1], 10));
+      const time = fmtTime(p[0]) + ' / ' + fmtTime(p[1]);
       const key = title + '||' + artist;
-      if (playerWin) playerWin.webContents.send('track', { title, artist, art, time, playing });
+      const info = { title, artist, art, time, playing };
+      if (playerWin) playerWin.webContents.send('track', info);
+      if (mainWin) mainWin.webContents.send('track', info);
       if (playing && store.playerPopup && (!wasPlaying || key !== lastTrackKey)) {
         if (playerWin && !playerWin.isVisible()) playerWin.show();
       }
@@ -435,13 +498,12 @@ ipcMain.handle('store-get', () => store);
 ipcMain.handle('store-set', (_e, patch) => {
   Object.assign(store, patch || {});
   saveStore();
-  if (patch && (patch.redesign || patch.rd || patch.anims)) {
-    if (mainWin) mainWin.webContents.executeJavaScript(cssJs(buildCss())).catch(() => {});
-  }
+  if (patch && (patch.redesign || patch.rd || patch.anims)) injectSite();
   if (patch && typeof patch.autostart !== 'undefined') applyAutostart();
   return true;
 });
 ipcMain.handle('shell-cmd', async (e, name, arg) => {
+  const wc = siteWC();
   if (name === 'toggle') return clickPlayer(TOGGLE_JS);
   if (name === 'next') return clickPlayer(NEXT_JS);
   if (name === 'prev') return clickPlayer(PREV_JS);
@@ -456,6 +518,27 @@ ipcMain.handle('shell-cmd', async (e, name, arg) => {
     return true;
   }
   if (name === 'player-hide') { if (playerWin) playerWin.hide(); return true; }
+  if (name === 'layout' && arg) {
+    store.sidebarOpen = arg.sidebarOpen !== false;
+    saveStore(); layoutSiteView(); return true;
+  }
+  if (name === 'nav-back') { if (wc && wc.canGoBack()) wc.goBack(); return true; }
+  if (name === 'nav-fwd') { if (wc && wc.canGoForward()) wc.goForward(); return true; }
+  if (name === 'nav-reload') { if (wc) wc.reload(); return true; }
+  if (name === 'nav-go' && typeof arg === 'string' && wc) { wc.loadURL(arg); return true; }
+  if (name === 'pip-open') { openPip(typeof arg === 'string' ? arg : ''); return true; }
+  if (name === 'copy-link') {
+    try {
+      const { clipboard } = require('electron');
+      if (wc) clipboard.writeText(wc.getURL());
+    } catch (err) { /* ignore */ }
+    return true;
+  }
+  if (name === 'open-ext') {
+    if (wc) { try { await shell.openExternal(wc.getURL()); } catch (err) { /* ignore */ } }
+    return true;
+  }
+  if (name === 'open-settings') { openSettings(); return true; }
   if (name === 'ext-add') {
     const r = await dialog.showOpenDialog({ properties: ['openDirectory'] });
     if (r.canceled || !r.filePaths[0]) return { msg: 'Cancelled.' };
@@ -486,7 +569,7 @@ else {
   app.on('second-instance', showMain);
   app.whenReady().then(async () => {
     store = loadStore();
-    logLine('start version=1.9.0');
+    logLine('start version=2.0.0');
     setupAdblock();
     createMain();
     createPlayer();
@@ -502,8 +585,9 @@ else {
   app.on('before-quit', () => {
     allowExit = true;
     try {
-      if (mainWin && mainWin.webContents.getURL().startsWith('http')) {
-        store.lastUrl = mainWin.webContents.getURL();
+      const wc = siteWC();
+      if (wc && wc.getURL().startsWith('http')) {
+        store.lastUrl = wc.getURL();
         saveStore();
       }
     } catch (e) { /* ignore */ }

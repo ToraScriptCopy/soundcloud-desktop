@@ -8,14 +8,15 @@ The most lightweight unofficial SoundCloud client for Windows. Other wrappers sh
 
 Go to [Releases](../../releases) and grab the latest.
 
-There are two builds:
+There are three builds:
 
 - **Classic (WPF)** - `SoundCloudDesktopBeta-Portable-vX.zip`. The main build with a Fluent design shell. About 3 MB, the lightest one.
-- **Alternative UI** - `SoundCloudDesktopBeta-Portable-AlternativeUI-vX.zip`. A separate build on Electron with a real Radix Themes interface: same features, dark Radix shell, animated windows. Bigger download since it bundles its own Chromium, needs no WebView2.
+- **Alternative UI** - `SoundCloudDesktopBeta-Portable-AlternativeUI-vX.zip`. A separate build on Electron with a real Radix Themes interface: full shell with navigation, sidebar and bottom bar, same features as Classic. Bigger download since it bundles its own Chromium, needs no WebView2.
+- **Ultra Light** - `SoundCloudDesktopBeta-UltraLight-vX.zip`. One exe and nothing else, just SoundCloud in a window. Login lives in system files, so the folder stays clean.
 
-Both are portable. Unpack wherever you want and run the exe. No install, no admin rights.
+All are portable. Unpack wherever you want and run the exe. No install, no admin rights.
 
-The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. The Alternative UI build needs nothing, everything is inside the zip.
+The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. The Alternative UI and Ultra Light builds need nothing extra.
 
 ## Why it runs lighter than the rest
 

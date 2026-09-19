@@ -9,3 +9,7 @@ portable/
 AltElectron/node_modules/
 AltElectron/dist/
 AltElectron/portable/
+UltraLight/dist/
+UltraLight/build/
+UltraLight/__pycache__/
+*.spec
