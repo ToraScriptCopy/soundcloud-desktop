@@ -21,6 +21,16 @@ jobs:
       - name: Install deps
         working-directory: AltElectron
         run: npm ci --no-audit --no-fund
+      - name: Ensure Electron Linux runtime
+        working-directory: AltElectron
+        run: |
+          if [ ! -f node_modules/electron/dist/electron ]; then
+            VER=$(node -p "require('./node_modules/electron/package.json').version")
+            curl -sL -o /tmp/el.zip "https://github.com/electron/electron/releases/download/v${VER}/electron-v${VER}-linux-x64.zip"
+            mkdir -p node_modules/electron/dist
+            unzip -q /tmp/el.zip -d node_modules/electron/dist
+          fi
+          ls node_modules/electron/dist/electron
       - name: Build UI
         working-directory: AltElectron
         run: npm run ui:build

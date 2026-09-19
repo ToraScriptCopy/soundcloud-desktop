@@ -34,12 +34,14 @@ for (const n of ['default_app.asar']) {
   const p = path.join(out, 'resources', n);
   if (fs.existsSync(p)) fs.rmSync(p, { force: true });
 }
-// 3. Rename launcher
-const isWin = process.platform === 'win32';
-const srcExe = path.join(out, isWin ? 'electron.exe' : 'electron');
-const dstExe = path.join(out, isWin ? 'SoundCloudDeskAlt.exe' : 'SoundCloudDeskAlt');
+// 3. Rename launcher. Detect the TARGET platform from the dist contents,
+// not from the build machine, so cross-packing works.
+const hasWinExe = fs.existsSync(path.join(out, 'electron.exe'));
+const isWinTarget = hasWinExe;
+const srcExe = path.join(out, isWinTarget ? 'electron.exe' : 'electron');
+const dstExe = path.join(out, isWinTarget ? 'SoundCloudDeskAlt.exe' : 'SoundCloudDeskAlt');
 fs.renameSync(srcExe, dstExe);
-if (!isWin) fs.chmodSync(dstExe, 0o755);
+if (!isWinTarget) fs.chmodSync(dstExe, 0o755);
 // 4. App files (main process + built UI + assets, no node_modules needed at runtime)
 fs.mkdirSync(appOut, { recursive: true });
 fs.copyFileSync(path.join(root, 'package.json'), path.join(appOut, 'package.json'));
