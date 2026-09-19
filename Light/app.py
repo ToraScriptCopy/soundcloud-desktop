@@ -92,10 +92,33 @@ def main():
         print('Run: pip install pywebview')
         return 1
     profile = profile_dir()
-    webview.create_window(
+    win = webview.create_window(
         APP_TITLE, HOME_URL,
         width=1180, height=760, min_size=(860, 560),
     )
+
+    def slim_scrollbars():
+        # Barely visible scrollbars, nothing else. 15% thumb, transparent track.
+        try:
+            win.evaluate_js(
+                "(function(){var s=document.getElementById('__scLite');"
+                "if(!s){s=document.createElement('style');s.id='__scLite';"
+                "(document.head||document.documentElement).appendChild(s);}"
+                "s.textContent='html{scrollbar-width:thin;"
+                "scrollbar-color:rgba(255,255,255,.15) transparent!important}"
+                "::-webkit-scrollbar{width:6px!important;height:6px!important}"
+                "::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15)"
+                "!important;border-radius:99px!important;border:none!important}"
+                "::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.35)"
+                "!important}::-webkit-scrollbar-track{background:transparent"
+                "!important}';})()")
+        except Exception:
+            pass
+
+    try:
+        win.events.loaded += slim_scrollbars
+    except Exception:
+        pass
     try:
         webview.start(private_mode=False, storage_path=profile, gui='edgechromium')
     except Exception as ex:

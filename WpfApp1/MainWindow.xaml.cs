@@ -86,6 +86,19 @@ namespace WpfApp1
             InitializeComponent();
             bool tampered;
             _state = SecureStore.Load(out tampered);
+            // --open-url= lets an external call (or a test) open a page directly.
+            try
+            {
+                foreach (string a in Environment.GetCommandLineArgs())
+                {
+                    if (a.StartsWith("--open-url=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string u = a.Substring(11).Trim();
+                        if (u.Length > 0) _state.LastUrl = u;
+                    }
+                }
+            }
+            catch { }
             // Migrate old vaults: the redesign used to be one toggle,
             // now it is flags. If it was on, turn every part on.
             if (_state.ReDesign && !(_state.RdCards || _state.RdButtons || _state.RdHeader

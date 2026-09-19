@@ -1,4 +1,4 @@
-/* Dark interfaceilian palette. Flat surfaces, no glow. */
+/* Dark interface palette. Flat surfaces, no glow. */
 :root {
   --bg: #191919;
   --card: #1f1f1f;
@@ -13,6 +13,51 @@
   --radius-md: 14px;
   --radius-sm: 9px;
 }
+html[data-theme="light"] {
+  --bg: #f4f4f4;
+  --card: #ffffff;
+  --btn: #e6e6e6;
+  --btn-hover: #dcdcdc;
+  --line: #d9d9d9;
+  --text: #1a1a1c;
+  --muted: #5f6368;
+}
+html[data-theme="light"] .topbar { background: rgba(244, 244, 244, 0.94); }
+/* Scroll-reveal. */
+.rv { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.rv.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rv { opacity: 1; transform: none; transition: none; }
+  * { animation-duration: 0.01ms !important; }
+}
+/* Copy-hash buttons. */
+.copy-btn {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 8px;
+  background: var(--btn); color: var(--text); border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 600;
+  font-family: inherit; cursor: pointer; transition: background 0.15s ease;
+}
+.copy-btn:hover { background: var(--btn-hover); }
+.copy-btn.done { border-color: var(--accent); color: var(--accent); }
+/* Fullscreen source section. */
+#source:fullscreen { background: var(--bg); padding: 24px; overflow: auto; }
+#source:fullscreen #editor { height: calc(100vh - 220px); }
+/* Back to top. */
+#toTop {
+  position: fixed; right: 22px; bottom: 22px; z-index: 30;
+  width: 44px; height: 44px; border-radius: 99px;
+  background: var(--btn); color: var(--text); border: 1px solid var(--line);
+  font-size: 19px; cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.2s ease, background 0.15s ease;
+}
+#toTop.show { opacity: 1; pointer-events: auto; }
+#toTop:hover { background: var(--btn-hover); transform: translateY(-2px); }
+/* Thin quiet scrollbars. */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(140, 140, 140, 0.25); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(140, 140, 140, 0.45); }
+::-webkit-scrollbar-track { background: transparent; }
+html { scrollbar-width: thin; scrollbar-color: rgba(140, 140, 140, 0.3) transparent; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {

@@ -52,6 +52,7 @@
         <a href="#faq" data-i18n="nav_faq">FAQ</a>
       </nav>
       <div class="lang-picker">
+        <button class="lang-btn" id="themeBtn" aria-label="Theme"></button>
         <button class="lang-btn" id="langBtn" aria-label="Language"></button>
         <div class="lang-menu" id="langMenu"></div>
       </div>
@@ -192,11 +193,15 @@
     <section id="releases" class="section">
       <h2 data-i18n="rel_title">All releases</h2>
       <p class="section-sub" data-i18n="rel_sub">Loaded live from GitHub, nothing hardcoded.</p>
+      <p class="muted" id="statsLine"></p>
       <div class="rel-list" id="relList"><p class="loading" data-i18n="loading">Loading…</p></div>
     </section>
 
     <section id="source" class="section">
-      <h2 data-i18n="src_title">Browse the source</h2>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <h2 data-i18n="src_title" style="margin:0">Browse the source</h2>
+        <button class="btn btn-flat" id="fsBtn" style="margin-left:auto;padding:8px 18px;font-size:13px">Fullscreen</button>
+      </div>
       <p class="section-sub" data-i18n="src_sub">Real files from the repository, opened in the editor. Pick a file on the left.</p>
       <div class="src-layout">
         <div class="filetree" id="fileTree"><p class="loading" data-i18n="loading">Loading…</p></div>
@@ -238,6 +243,8 @@
       <a href="https://github.com/ToraScriptCopy/soundcloud-desktop">GitHub</a>
     </div>
   </footer>
+
+  <button id="toTop" aria-label="Back to top">↑</button>
 
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
   <script src="i18n.js"></script>

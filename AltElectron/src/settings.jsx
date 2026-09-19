@@ -248,7 +248,8 @@ function Settings() {
           </Flex>
         </Card>
 
-        <Text size="1" color="gray">SoundCloud Desktop Alt 3.1.0, experimental. Hotkeys: numpad 1/2/3 tracks, 4/5 volume.</Text>
+        <Text size="1" color="gray">SoundCloud Desktop Alt 3.2.0, experimental. Hotkeys: numpad 1/2/3 tracks, 4/5 volume.</Text>
+        <Text size="1" color="gray">The extra features here were invented and written together with AI.</Text>
       </Flex>
     </Theme>
   );

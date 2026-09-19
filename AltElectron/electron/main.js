@@ -1,4 +1,4 @@
-/* SoundCloud Desktop Alt 3.1.0 - experimental Electron build.
+/* SoundCloud Desktop Alt 3.2.0 - experimental Electron build.
    Radix shell (nav, sidebar, bottom bar) around a WebContentsView with
    soundcloud.com, plus player popup, settings, tray, hotkeys and extras. */
 'use strict';
@@ -6,7 +6,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session
 const path = require('path');
 const fs = require('fs');
 
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.2.0';
 const HOME_URL = 'https://soundcloud.com/';
 const TOP_H = 52, BOTTOM_H = 46, SIDE_W = 210;
 
@@ -140,6 +140,13 @@ try{new MutationObserver(sch).observe(document.documentElement,{childList:true,s
 sweep();setInterval(sweep,3000);})()`;
 
 /* ---------------- site CSS fragments (same as the WPF build) ---------------- */
+const SCROLL_CSS =
+  'html{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent!important}'
+  + '::-webkit-scrollbar{width:6px!important;height:6px!important}'
+  + '::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15)!important;border-radius:99px!important;border:none!important}'
+  + '::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.35)!important}'
+  + '::-webkit-scrollbar-track{background:transparent!important}';
+
 const ANIM_CSS =
   '@keyframes scFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}'
   + '@keyframes scPopIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}'
@@ -224,7 +231,7 @@ const RD = {
 };
 
 function buildCss() {
-  let css = '';
+  let css = SCROLL_CSS;
   if (store.anims) css += ANIM_CSS;
   if (store.redesign && store.rd) {
     for (const k of Object.keys(RD)) {

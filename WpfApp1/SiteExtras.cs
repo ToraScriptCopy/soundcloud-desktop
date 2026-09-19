@@ -8,7 +8,7 @@ namespace WpfApp1
     {
         public static string BuildCss(AppState s, bool adblock)
         {
-            string css = "";
+            string css = ScrollCss;
             if (s.HideHeader)
             {
                 css += "header.header{display:none!important;}";
@@ -40,6 +40,14 @@ namespace WpfApp1
                 + "(document.head||document.documentElement).appendChild(s);}"
                 + "s.textContent='" + css + "';})()";
         }
+
+        // Barely visible scrollbars, always on. Thumb sits at 15% opacity.
+        public const string ScrollCss =
+            "html{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent!important}"
+            + "::-webkit-scrollbar{width:6px!important;height:6px!important}"
+            + "::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15)!important;border-radius:99px!important;border:none!important}"
+            + "::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.35)!important}"
+            + "::-webkit-scrollbar-track{background:transparent!important}";
 
         // Simple pretty animations. Transform and opacity only, so the
         // page stays fast. No artwork rounding here on purpose.

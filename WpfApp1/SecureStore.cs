@@ -90,9 +90,19 @@ namespace WpfApp1
     }
     public static class SecureStore
     {
-        public static readonly string DataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "SoundCloudDesktopBeta");
+        private static string ResolveDataDir()
+        {
+            // SCD_PROFILE overrides the profile folder (used for testing,
+            // so a second instance never touches the real profile).
+            string custom = null;
+            try { custom = Environment.GetEnvironmentVariable("SCD_PROFILE"); }
+            catch { }
+            if (!string.IsNullOrWhiteSpace(custom)) return custom;
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "SoundCloudDesktopBeta");
+        }
+        public static readonly string DataDir = ResolveDataDir();
         public static readonly string VaultPath = Path.Combine(DataDir, "vault.dat");
         public static string LastError { get; private set; }
         public static AppState Load(out bool tampered)
