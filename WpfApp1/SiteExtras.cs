@@ -59,23 +59,38 @@ namespace WpfApp1
             + "input,textarea{transition:border-color .18s ease,box-shadow .18s ease!important}";
 
         // Promo killer. Hides "become an author" style upsell banners by
-        // their exact text, so login and signup are never touched.
+        // their exact text, removing the whole banner root so no empty
+        // boxes stay behind. Login and signup are never touched.
         // Runs always, independent of the adblock toggle.
         public const string PromoJs =
             "(function(){if(window.__scPromoKiller)return;window.__scPromoKiller=true;"
             + "var PH=['Uploading tracks just got way easier','Get heard by up to 100 listeners','Now available: Get heard'];"
-            + "function sweep(){try{"
+            + "var BS=[\"[class*='banner']\",\"[class*='Banner']\",\"[class*='upsell']\",\"[class*='Upsell']\",\"[class*='promo']\",\"[class*='Promo']\",\"[class*='notice']\",\"[class*='Notice']\",\"[class*='callout']\",\"[class*='Callout']\"].join(',');"
+            + "function hasAuth(el){try{return el.querySelector&&el.querySelector('input[type=password],input[type=email],input[type=text][autocomplete*=email],form[action*=login],form[action*=signin]');}catch(e){return null;}}"
+            + "function hideRoot(el){var cur=el,g=0;"
+            + "while(cur&&cur.parentElement&&g<8){var p=cur.parentElement;"
+            + "if(p===document.body)break;"
+            + "var tag=(p.tagName||'').toLowerCase();"
+            + "if(tag!=='div'&&tag!=='section'&&tag!=='aside'&&tag!=='li')break;"
+            + "var txt='';try{txt=p.textContent||'';}catch(e){}"
+            + "if(txt.length>600)break;"
+            + "if(hasAuth(p))break;"
+            + "cur=p;g++;}"
+            + "try{cur.style.setProperty('display','none','important');}catch(e){}}"
+            + "function hasPhrase(el){var t='';try{t=el.textContent||'';}catch(e){}if(!t)return false;"
+            + "for(var i=0;i<PH.length;i++){if(t.indexOf(PH[i])>=0)return true;}return false;}"
+            + "function sweepText(){try{"
             + "var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false);"
             + "var n,found=[];"
             + "while(n=w.nextNode()){var t=n.nodeValue;if(!t)continue;"
             + "for(var i=0;i<PH.length;i++){if(t.indexOf(PH[i])>=0){found.push(n);break;}}}"
-            + "for(var k=0;k<found.length;k++){var el=found[k].parentElement,g=0;"
-            + "while(el&&el!==document.body&&g<5){"
-            + "if(el.querySelector&&el.querySelector('input[type=password],input[type=email]'))break;"
-            + "var tag=(el.tagName||'').toLowerCase();"
-            + "if(tag==='div'||tag==='section'||tag==='aside'||tag==='li'){el.style.setProperty('display','none','important');break;}"
-            + "el=el.parentElement;g++;}}"
+            + "for(var k=0;k<found.length;k++){if(found[k].parentElement)hideRoot(found[k].parentElement);}"
             + "}catch(e){}}"
+            + "function sweepBoxes(){try{"
+            + "var els=document.querySelectorAll(BS);"
+            + "for(var i=0;i<els.length;i++){if(hasPhrase(els[i])&&!hasAuth(els[i]))hideRoot(els[i]);}"
+            + "}catch(e){}}"
+            + "function sweep(){sweepText();sweepBoxes();}"
             + "var t=null;function sch(){if(t)return;t=setTimeout(function(){t=null;sweep();},300);}"
             + "try{new MutationObserver(sch).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}"
             + "sweep();setInterval(sweep,3000);})()";

@@ -1,0 +1,62 @@
+name: linux-builds
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  alt-linux:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install deps
+        working-directory: AltElectron
+        run: npm ci --no-audit --no-fund
+      - name: Build UI
+        working-directory: AltElectron
+        run: npm run ui:build
+      - name: Pack portable
+        working-directory: AltElectron
+        run: npm run pkg:portable
+      - name: Archive
+        run: tar czf SoundCloudDesktopBeta-Linux-AlternativeUI-${{ env.TAG }}.tar.gz -C AltElectron/portable SoundCloudDeskAlt
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: SoundCloudDesktopBeta-Linux-AlternativeUI-${{ env.TAG }}.tar.gz
+
+  ultra-linux:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+          python -m pip install --upgrade pip
+          pip install pywebview pyinstaller
+      - name: Build single file
+        working-directory: UltraLight
+        run: pyinstaller --onefile --noconsole --name SoundCloudUltraLightLinux app.py
+      - name: Archive
+        run: tar czf SoundCloudDesktopBeta-Linux-UltraLight-${{ env.TAG }}.tar.gz -C UltraLight/dist SoundCloudUltraLightLinux
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: SoundCloudDesktopBeta-Linux-UltraLight-${{ env.TAG }}.tar.gz

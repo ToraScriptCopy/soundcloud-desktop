@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://torascriptcopy.github.io/soundcloud-desktop/sitemap.xml

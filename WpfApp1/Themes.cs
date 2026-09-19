@@ -4,7 +4,7 @@ namespace WpfApp1
 {
     public static class Themes
     {
-        public const int Count = 10;
+        public const int Count = 14;
         public static void Apply(int index)
         {
             if (index <= 0)
@@ -46,6 +46,18 @@ namespace WpfApp1
                     break;
                 case 9:
                     accent = Color.FromRgb(0x00, 0xB7, 0xC3);
+                    break;
+                case 10:
+                    accent = Color.FromRgb(0xFF, 0xB3, 0x00);
+                    break;
+                case 11:
+                    accent = Color.FromRgb(0x8B, 0xC3, 0x4A);
+                    break;
+                case 12:
+                    accent = Color.FromRgb(0x3F, 0x51, 0xB5);
+                    break;
+                case 13:
+                    accent = Color.FromRgb(0x60, 0x7D, 0x8B);
                     break;
                 default:
                     break;

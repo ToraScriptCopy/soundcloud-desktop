@@ -12,8 +12,15 @@ HOME_URL = 'https://soundcloud.com/'
 
 
 def profile_dir():
-    base = os.environ.get('LOCALAPPDATA') or os.path.expanduser('~')
-    d = os.path.join(base, 'SoundCloudDesktopUltraLight', 'EBWebView')
+    # System files, never next to the exe. Windows: LocalAppData,
+    # Linux: XDG data dir. Login survives restarts either way.
+    if os.name == 'nt':
+        base = os.environ.get('LOCALAPPDATA') or os.path.expanduser('~')
+        d = os.path.join(base, 'SoundCloudDesktopUltraLight', 'EBWebView')
+    else:
+        base = os.environ.get('XDG_DATA_HOME') or os.path.join(
+            os.path.expanduser('~'), '.local', 'share')
+        d = os.path.join(base, 'soundcloud-ultra-light', 'webview')
     os.makedirs(d, exist_ok=True)
     return d
 
@@ -21,7 +28,7 @@ def profile_dir():
 def main():
     profile = profile_dir()
     win = webview.create_window(
-        'SoundCloud',
+        'SoundCloud Light',
         HOME_URL,
         width=1180,
         height=760,

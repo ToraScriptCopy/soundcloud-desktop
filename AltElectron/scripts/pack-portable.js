@@ -35,7 +35,11 @@ for (const n of ['default_app.asar']) {
   if (fs.existsSync(p)) fs.rmSync(p, { force: true });
 }
 // 3. Rename launcher
-fs.renameSync(path.join(out, 'electron.exe'), path.join(out, 'SoundCloudDeskAlt.exe'));
+const isWin = process.platform === 'win32';
+const srcExe = path.join(out, isWin ? 'electron.exe' : 'electron');
+const dstExe = path.join(out, isWin ? 'SoundCloudDeskAlt.exe' : 'SoundCloudDeskAlt');
+fs.renameSync(srcExe, dstExe);
+if (!isWin) fs.chmodSync(dstExe, 0o755);
 // 4. App files (main process + built UI + assets, no node_modules needed at runtime)
 fs.mkdirSync(appOut, { recursive: true });
 fs.copyFileSync(path.join(root, 'package.json'), path.join(appOut, 'package.json'));

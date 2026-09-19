@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://torascriptcopy.github.io/soundcloud-desktop/sitemap-pages.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://torascriptcopy.github.io/soundcloud-desktop/sitemap-builds.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://torascriptcopy.github.io/soundcloud-desktop/sitemap-releases.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://torascriptcopy.github.io/soundcloud-desktop/sitemap-features.xml</loc>
+  </sitemap>
+</sitemapindex>

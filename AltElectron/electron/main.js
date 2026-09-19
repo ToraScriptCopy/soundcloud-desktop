@@ -1,11 +1,12 @@
-/* SoundCloud Desktop Alt 2.0 - Electron shell with real Radix Themes UI.
-   Main window is a Radix shell (nav, sidebar, bottom bar) around a
-   WebContentsView that loads soundcloud.com with the shared ReDesign CSS/JS. */
+/* SoundCloud Desktop Alt 3.0.0 - experimental Electron build.
+   Radix shell (nav, sidebar, bottom bar) around a WebContentsView with
+   soundcloud.com, plus player popup, settings, tray, hotkeys and extras. */
 'use strict';
-const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session, shell, WebContentsView } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session, shell, WebContentsView, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+const APP_VERSION = '3.0.0';
 const HOME_URL = 'https://soundcloud.com/';
 const TOP_H = 52, BOTTOM_H = 46, SIDE_W = 210;
 
@@ -23,6 +24,10 @@ function defaultStore() {
     rd: { rdCards: true, rdButtons: true, rdHeader: true, rdPlayer: true, rdComments: true, rdSidebar: true, rdInputs: true, rdPopups: true },
     playerPopup: true, trayHide: true, autostart: false, sidebarOpen: true,
     extensions: [], lastUrl: HOME_URL, volume: 0.8, muted: false,
+    speed: 1, repeatOne: false, notify: false, zoom: 1,
+    recent: [], links: [], startMin: false, bossKey: false, alwaysOnTop: false,
+    shellTheme: { appearance: 'dark', accent: 'orange' },
+    sleep: 0, stats: { tracks: 0, seconds: 0 },
   };
 }
 function loadStore() {
@@ -30,7 +35,11 @@ function loadStore() {
     const raw = fs.readFileSync(STORE_FILE(), 'utf8');
     const s = Object.assign(defaultStore(), JSON.parse(raw));
     s.rd = Object.assign(defaultStore().rd, s.rd || {});
+    s.shellTheme = Object.assign(defaultStore().shellTheme, s.shellTheme || {});
+    s.stats = Object.assign(defaultStore().stats, s.stats || {});
     if (!Array.isArray(s.extensions)) s.extensions = [];
+    if (!Array.isArray(s.recent)) s.recent = [];
+    if (!Array.isArray(s.links)) s.links = [];
     return s;
   } catch (e) { return defaultStore(); }
 }
@@ -39,6 +48,9 @@ function saveStore() {
   catch (e) { /* ignore */ }
 }
 let store = defaultStore();
+let blockCount = 0;
+let sleepLeft = 0;
+let memSec = 0;
 
 /* ---------------- site scripts (mirror of the WPF build) ---------------- */
 const POLL_JS = `(function(){var t=0,d=0,playing=false,title='',art='',artist='';
@@ -68,6 +80,16 @@ const PREV_JS = `(function(){var b=document.querySelector('button[aria-label="Pr
 ||document.querySelector('.skipControl__previous');
 if(!b)return 'no-btn';b.click();return 'ok';})()`;
 
+const PAUSE_JS = `(function(){try{var a=document.querySelector('audio');if(a&&!a.paused){a.pause();return 'paused';}}catch(e){}return 'already';})()`;
+
+const LIKE_JS = `(function(){try{var b=document.querySelector('.sc-button-like:not(.liked)')||document.querySelector('button[title="Like"]');if(!b)return 'no-btn';b.click();return 'ok';}catch(e){return 'err';}})()`;
+
+const REPEAT_JS = `(function(){try{var a=document.querySelector('audio');if(a&&a.ended){a.currentTime=0;a.play();return 'looped';}}catch(e){}return 'no';})()`;
+
+function speedJs(v) {
+  return `(function(v){try{window.__scSpeed=v;document.querySelectorAll('audio,video').forEach(function(m){try{m.playbackRate=v;}catch(e){}});}catch(e){}})(${v})`;
+}
+
 function volumeJs(v) {
   return `(function(v){
 window.__scVol=v;
@@ -81,24 +103,38 @@ function ev(type,el){try{el.dispatchEvent(new PointerEvent(type,{bubbles:true,ca
 ev('pointerover',w);ev('pointerenter',w);ev('pointerdown',w);ev('pointermove',document);ev('pointerup',document);
 return 'ok';}
 var r1=setSlider(v);
-try{if(!window.__scVolObs){window.__scVolObs=new MutationObserver(function(muts){muts.forEach(function(mu){if(!mu.addedNodes)return;for(var i=0;i<mu.addedNodes.length;i++){var nd=mu.addedNodes[i];if(!nd||!nd.querySelectorAll)continue;try{nd.querySelectorAll('audio,video').forEach(function(m){try{m.volume=window.__scVol;}catch(e){}});}catch(e){}}});});window.__scVolObs.observe(document.documentElement,{childList:true,subtree:true});}}catch(e){}
+try{if(!window.__scVolObs){window.__scVolObs=new MutationObserver(function(muts){muts.forEach(function(mu){if(!mu.addedNodes)return;for(var i=0;i<mu.addedNodes.length;i++){var nd=mu.addedNodes[i];if(!nd||!nd.querySelectorAll)continue;try{nd.querySelectorAll('audio,video').forEach(function(m){try{m.volume=window.__scVol;if(window.__scSpeed&&window.__scSpeed!==1)m.playbackRate=window.__scSpeed;}catch(e){}});}catch(e){}}});});window.__scVolObs.observe(document.documentElement,{childList:true,subtree:true});}}catch(e){}
 return r1;})(${v})`;
 }
 
 const PROMO_JS = `(function(){if(window.__scPromoKiller)return;window.__scPromoKiller=true;
 var PH=['Uploading tracks just got way easier','Get heard by up to 100 listeners','Now available: Get heard'];
-function sweep(){try{
+var BS=["[class*='banner']","[class*='Banner']","[class*='upsell']","[class*='Upsell']","[class*='promo']","[class*='Promo']","[class*='notice']","[class*='Notice']","[class*='callout']","[class*='Callout']"].join(',');
+function hasAuth(el){try{return el.querySelector&&el.querySelector('input[type=password],input[type=email],input[type=text][autocomplete*=email],form[action*=login],form[action*=signin]');}catch(e){return null;}}
+function hideRoot(el){var cur=el,g=0;
+while(cur&&cur.parentElement&&g<8){var p=cur.parentElement;
+if(p===document.body)break;
+var tag=(p.tagName||'').toLowerCase();
+if(tag!=='div'&&tag!=='section'&&tag!=='aside'&&tag!=='li')break;
+var txt='';try{txt=p.textContent||'';}catch(e){}
+if(txt.length>600)break;
+if(hasAuth(p))break;
+cur=p;g++;}
+try{cur.style.setProperty('display','none','important');}catch(e){}}
+function hasPhrase(el){var t='';try{t=el.textContent||'';}catch(e){}if(!t)return false;
+for(var i=0;i<PH.length;i++){if(t.indexOf(PH[i])>=0)return true;}return false;}
+function sweepText(){try{
 var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false);
 var n,found=[];
 while(n=w.nextNode()){var t=n.nodeValue;if(!t)continue;
 for(var i=0;i<PH.length;i++){if(t.indexOf(PH[i])>=0){found.push(n);break;}}}
-for(var k=0;k<found.length;k++){var el=found[k].parentElement,g=0;
-while(el&&el!==document.body&&g<5){
-if(el.querySelector&&el.querySelector('input[type=password],input[type=email]'))break;
-var tag=(el.tagName||'').toLowerCase();
-if(tag==='div'||tag==='section'||tag==='aside'||tag==='li'){el.style.setProperty('display','none','important');break;}
-el=el.parentElement;g++;}}
+for(var k=0;k<found.length;k++){if(found[k].parentElement)hideRoot(found[k].parentElement);}
 }catch(e){}}
+function sweepBoxes(){try{
+var els=document.querySelectorAll(BS);
+for(var i=0;i<els.length;i++){if(hasPhrase(els[i])&&!hasAuth(els[i]))hideRoot(els[i]);}
+}catch(e){}}
+function sweep(){sweepText();sweepBoxes();}
 var t=null;function sch(){if(t)return;t=setTimeout(function(){t=null;sweep();},300);}
 try{new MutationObserver(sch).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
 sweep();setInterval(sweep,3000);})()`;
@@ -267,6 +303,13 @@ function showMain() {
 
 function siteWC() { return siteView ? siteView.webContents : null; }
 
+function pushStore() {
+  const payload = Object.assign({}, store, { blocks: blockCount });
+  for (const w of [mainWin, playerWin, settingsWin]) {
+    try { if (w) w.webContents.send('store-changed', payload); } catch (e) { /* ignore */ }
+  }
+}
+
 function layoutSiteView() {
   if (!mainWin || !siteView) return;
   try {
@@ -291,17 +334,20 @@ function injectSite() {
   if (!wc) return;
   wc.executeJavaScript(cssJs(buildCss())).catch(() => {});
   wc.executeJavaScript(PROMO_JS).catch(() => {});
+  try { wc.setZoomFactor(store.zoom || 1); } catch (e) { /* ignore */ }
+  if (store.speed && store.speed !== 1) wc.executeJavaScript(speedJs(store.speed)).catch(() => {});
 }
 
 function createMain() {
   mainWin = new BrowserWindow({
     width: 1180, height: 760, minWidth: 860, minHeight: 560,
     title: 'SoundCloud Desktop Alt',
-    autoHideMenuBar: true,
+    autoHideMenuBar: true, show: !store.startMin,
     icon: asset('icon.ico'),
     webPreferences: { preload: path.join(__dirname, 'preload-shell.js'), contextIsolation: true },
   });
   mainWin.loadFile(uiFile('shell.html'));
+  mainWin.setAlwaysOnTop(!!store.alwaysOnTop);
 
   siteView = new WebContentsView({ webPreferences: { partition: PARTITION } });
   mainWin.contentView.addChildView(siteView);
@@ -316,12 +362,29 @@ function createMain() {
   siteView.webContents.on('did-finish-load', () => { injectSite(); applyVolume(); sendNavState(); });
   siteView.webContents.on('did-navigate-in-page', () => { injectSite(); sendNavState(); });
   siteView.webContents.on('did-navigate', () => { sendNavState(); });
+  siteView.webContents.on('before-input-event', (e, input) => {
+    if (input.control && !input.alt && !input.meta) {
+      if (input.key === '=' || input.key === '+' || input.key === 'Add') {
+        e.preventDefault(); setZoom((store.zoom || 1) + 0.1);
+      } else if (input.key === '-' || input.key === 'Subtract') {
+        e.preventDefault(); setZoom((store.zoom || 1) - 0.1);
+      } else if (input.key === '0') { e.preventDefault(); setZoom(1); }
+    }
+  });
 
   mainWin.on('resize', layoutSiteView);
   mainWin.on('close', (e) => {
     if (store.trayHide && !allowExit) { e.preventDefault(); mainWin.hide(); }
   });
   mainWin.on('closed', () => { mainWin = null; siteView = null; });
+}
+
+function setZoom(z) {
+  store.zoom = Math.min(2, Math.max(0.5, Math.round(z * 10) / 10));
+  saveStore();
+  const wc = siteWC();
+  if (wc) { try { wc.setZoomFactor(store.zoom); } catch (e) { /* ignore */ } }
+  pushStore();
 }
 
 function widgetUrl(pageUrl, autoplay) {
@@ -373,13 +436,22 @@ function createPlayer() {
     webPreferences: { preload: path.join(__dirname, 'preload-shell.js'), contextIsolation: true },
   });
   playerWin.loadFile(uiFile('player.html'));
+  if (store.mini) applyMini();
   playerWin.on('close', (e) => { e.preventDefault(); playerWin.hide(); });
+}
+
+function applyMini() {
+  if (!playerWin) return;
+  try {
+    if (store.mini) { playerWin.setSize(360, 132); playerWin.setAlwaysOnTop(true); }
+    else { playerWin.setSize(400, 216); playerWin.setAlwaysOnTop(false); }
+  } catch (e) { /* ignore */ }
 }
 
 function openSettings() {
   if (settingsWin) { settingsWin.show(); settingsWin.focus(); return; }
   settingsWin = new BrowserWindow({
-    width: 440, height: 700, minWidth: 380, minHeight: 520,
+    width: 460, height: 720, minWidth: 380, minHeight: 520,
     title: 'Settings', autoHideMenuBar: true,
     icon: asset('icon.ico'),
     webPreferences: { preload: path.join(__dirname, 'preload-shell.js'), contextIsolation: true },
@@ -434,6 +506,30 @@ async function clickPlayer(js) {
   return 'no-btn';
 }
 
+function trackTooltip(title, playing) {
+  if (!tray) return;
+  try {
+    const t = ((playing ? 'Playing: ' : 'Paused: ') + (title || 'SoundCloud Desktop Alt')).slice(0, 120);
+    tray.setToolTip(t);
+  } catch (e) { /* ignore */ }
+}
+
+function notifyTrack(title, artist) {
+  try {
+    if (Notification.isSupported()) new Notification({ title, body: artist || 'SoundCloud' }).show();
+  } catch (e) { /* ignore */ }
+}
+
+function pushRecent(title, artist, url) {
+  const key = title + '||' + artist;
+  store.recent = (store.recent || []).filter((r) => (r.title + '||' + r.artist) !== key);
+  store.recent.unshift({ title, artist, url, at: Date.now() });
+  store.recent = store.recent.slice(0, 20);
+  saveStore();
+  updateJumpList();
+  pushStore();
+}
+
 function startPoll() {
   setInterval(async () => {
     const wc = siteWC();
@@ -442,22 +538,63 @@ function startPoll() {
       const raw = await wc.executeJavaScript(POLL_JS);
       const p = String(raw).split('|');
       if (p.length < 6) return;
+      const cur = parseInt(p[0], 10) || 0, dur = parseInt(p[1], 10) || 0;
       const title = decodeURIComponent(p[2] || '');
       const playing = p[3] === '1';
       const art = decodeURIComponent(p[4] || '');
       const artist = decodeURIComponent(p[5] || '');
-      const time = fmtTime(p[0]) + ' / ' + fmtTime(p[1]);
+      const time = fmtTime(cur) + ' / ' + fmtTime(dur);
       const key = title + '||' + artist;
-      const info = { title, artist, art, time, playing };
+      const info = { title, artist, art, time, playing, cur, dur };
       if (playerWin) playerWin.webContents.send('track', info);
       if (mainWin) mainWin.webContents.send('track', info);
-      if (playing && store.playerPopup && (!wasPlaying || key !== lastTrackKey)) {
-        if (playerWin && !playerWin.isVisible()) playerWin.show();
+      trackTooltip(title, playing);
+      if (playing) {
+        memSec += 1.5;
+        if (store.speed && store.speed !== 1) wc.executeJavaScript(speedJs(store.speed)).catch(() => {});
+        if (store.repeatOne) wc.executeJavaScript(REPEAT_JS).catch(() => {});
+        if (store.sleep > 0) {
+          sleepLeft -= 1.5;
+          if (sleepLeft <= 0) {
+            store.sleep = 0; sleepLeft = 0; saveStore();
+            wc.executeJavaScript(PAUSE_JS).catch(() => {});
+            pushStore();
+          }
+        }
+      }
+      if (playing && key !== lastTrackKey && title) {
+        store.stats.tracks = (store.stats.tracks || 0) + 1;
+        store.stats.seconds = (store.stats.seconds || 0) + memSec;
+        memSec = 0;
+        saveStore();
+        pushRecent(title, artist, wc.getURL());
+        if (store.notify) notifyTrack(title, artist);
+        if (store.playerPopup && playerWin && !playerWin.isVisible()) playerWin.show();
       }
       wasPlaying = playing;
       lastTrackKey = key;
     } catch (e) { /* page not ready */ }
   }, 1500);
+}
+
+function updateJumpList() {
+  try {
+    const items = (store.recent || []).slice(0, 5).map((r) => ({
+      type: 'task', program: process.execPath,
+      args: '--open-url=' + r.url,
+      title: String(r.title || 'Unknown').slice(0, 60),
+      description: String(r.artist || '').slice(0, 120),
+      iconPath: process.execPath, iconIndex: 0,
+    }));
+    app.setJumpList([{ type: 'custom', name: 'Recently played', items }]);
+  } catch (e) { /* not on Windows or failed */ }
+}
+
+function openUrlArg(argv) {
+  for (const a of argv || []) {
+    if (a.startsWith('--open-url=')) return a.slice(11);
+  }
+  return null;
 }
 
 function setupShortcuts() {
@@ -466,12 +603,26 @@ function setupShortcuts() {
     globalShortcut.register('num2', () => clickPlayer(TOGGLE_JS));
     globalShortcut.register('num3', () => clickPlayer(NEXT_JS));
     globalShortcut.register('num4', () => {
-      store.volume = Math.max(0, store.volume - 0.05); saveStore(); applyVolume();
+      store.volume = Math.max(0, store.volume - 0.05); saveStore(); applyVolume(); pushStore();
     });
     globalShortcut.register('num5', () => {
-      store.volume = Math.min(1, store.volume + 0.05); saveStore(); applyVolume();
+      store.volume = Math.min(1, store.volume + 0.05); saveStore(); applyVolume(); pushStore();
     });
+    if (store.bossKey) {
+      globalShortcut.register('F9', () => {
+        for (const w of [mainWin, playerWin, settingsWin, ...pipWins]) {
+          try { if (w) w.hide(); } catch (e) { /* ignore */ }
+        }
+      });
+    }
   } catch (e) { logLine('hotkeys failed: ' + e.message); }
+}
+
+function refreshShortcuts() {
+  try {
+    globalShortcut.unregisterAll();
+    setupShortcuts();
+  } catch (e) { /* ignore */ }
 }
 
 async function loadExtensions() {
@@ -487,19 +638,49 @@ function setupAdblock() {
   const ses = session.fromPartition(PARTITION);
   ses.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => {
     try {
-      if (shouldBlock(details.url)) return callback({ cancel: true });
+      if (shouldBlock(details.url)) { blockCount++; return callback({ cancel: true }); }
     } catch (e) { /* ignore */ }
     callback({});
   });
 }
 
+function cmpVer(a, b) {
+  const pa = String(a).replace(/^v/i, '').split('.').map((x) => parseInt(x, 10) || 0);
+  const pb = String(b).replace(/^v/i, '').split('.').map((x) => parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d !== 0) return d;
+  }
+  return 0;
+}
+
+async function checkUpdates() {
+  try {
+    const r = await fetch('https://api.github.com/repos/ToraScriptCopy/soundcloud-desktop/releases/latest', {
+      headers: { 'User-Agent': 'scd-alt', Accept: 'application/vnd.github+json' },
+    });
+    if (!r.ok) return { ok: false, msg: 'Check failed.' };
+    const j = await r.json();
+    const newer = cmpVer(j.tag_name, APP_VERSION) > 0;
+    return { ok: true, hasUpdate: newer, tag: j.tag_name, url: j.html_url, msg: newer ? ('New version ' + j.tag_name + ' is out.') : 'You are on the latest version.' };
+  } catch (e) { return { ok: false, msg: 'Check failed.' }; }
+}
+
 /* ---------------- IPC ---------------- */
-ipcMain.handle('store-get', () => store);
+ipcMain.handle('store-get', () => Object.assign({}, store, { blocks: blockCount }));
 ipcMain.handle('store-set', (_e, patch) => {
   Object.assign(store, patch || {});
+  if (patch && typeof patch.sleep !== 'undefined' && store.sleep > 0 && sleepLeft <= 0) {
+    sleepLeft = store.sleep * 60;
+  }
   saveStore();
   if (patch && (patch.redesign || patch.rd || patch.anims)) injectSite();
   if (patch && typeof patch.autostart !== 'undefined') applyAutostart();
+  if (patch && typeof patch.alwaysOnTop !== 'undefined' && mainWin) {
+    try { mainWin.setAlwaysOnTop(!!store.alwaysOnTop); } catch (e) { /* ignore */ }
+  }
+  if (patch && typeof patch.bossKey !== 'undefined') refreshShortcuts();
+  pushStore();
   return true;
 });
 ipcMain.handle('shell-cmd', async (e, name, arg) => {
@@ -507,6 +688,7 @@ ipcMain.handle('shell-cmd', async (e, name, arg) => {
   if (name === 'toggle') return clickPlayer(TOGGLE_JS);
   if (name === 'next') return clickPlayer(NEXT_JS);
   if (name === 'prev') return clickPlayer(PREV_JS);
+  if (name === 'like') { if (wc) return wc.executeJavaScript(LIKE_JS).catch(() => 'err'); return 'no-btn'; }
   if (name === 'volume' && arg) {
     store.volume = Math.min(1, Math.max(0, arg.volume));
     store.muted = !!arg.muted;
@@ -518,6 +700,9 @@ ipcMain.handle('shell-cmd', async (e, name, arg) => {
     return true;
   }
   if (name === 'player-hide') { if (playerWin) playerWin.hide(); return true; }
+  if (name === 'mini-toggle') {
+    store.mini = !store.mini; saveStore(); applyMini(); pushStore(); return !!store.mini;
+  }
   if (name === 'layout' && arg) {
     store.sidebarOpen = arg.sidebarOpen !== false;
     saveStore(); layoutSiteView(); return true;
@@ -539,6 +724,23 @@ ipcMain.handle('shell-cmd', async (e, name, arg) => {
     return true;
   }
   if (name === 'open-settings') { openSettings(); return true; }
+  if (name === 'link-add' && arg && arg.url) {
+    store.links = store.links || [];
+    if (!store.links.some((l) => l.url === arg.url)) {
+      store.links.push({ label: arg.label || arg.url, url: arg.url });
+      saveStore(); pushStore();
+    }
+    return store.links;
+  }
+  if (name === 'link-remove') {
+    store.links = (store.links || []).filter((l) => l.url !== arg);
+    saveStore(); pushStore(); return store.links;
+  }
+  if (name === 'recent-clear') {
+    store.recent = []; saveStore(); pushStore();
+    try { app.setJumpList([]); } catch (err) { /* ignore */ }
+    return true;
+  }
   if (name === 'ext-add') {
     const r = await dialog.showOpenDialog({ properties: ['openDirectory'] });
     if (r.canceled || !r.filePaths[0]) return { msg: 'Cancelled.' };
@@ -559,17 +761,62 @@ ipcMain.handle('shell-cmd', async (e, name, arg) => {
     try { await session.fromPartition(PARTITION).clearStorageData(); return { msg: 'Cache cleared.' }; }
     catch (err) { return { msg: 'Failed.' }; }
   }
+  if (name === 'check-updates') return checkUpdates();
+  if (name === 'settings-export') {
+    const r = await dialog.showSaveDialog({ defaultPath: 'scd-alt-settings.json', filters: [{ name: 'JSON', extensions: ['json'] }] });
+    if (r.canceled || !r.filePath) return { msg: 'Cancelled.' };
+    try { fs.writeFileSync(r.filePath, JSON.stringify(store, null, 2)); return { msg: 'Settings exported.' }; }
+    catch (err) { return { msg: 'Failed: ' + err.message }; }
+  }
+  if (name === 'settings-import') {
+    const r = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: 'JSON', extensions: ['json'] }] });
+    if (r.canceled || !r.filePaths[0]) return { msg: 'Cancelled.' };
+    try {
+      const incoming = JSON.parse(fs.readFileSync(r.filePaths[0], 'utf8'));
+      Object.assign(store, incoming);
+      saveStore(); applyAutostart();
+      if (mainWin) { try { mainWin.setAlwaysOnTop(!!store.alwaysOnTop); } catch (err) { /* ignore */ } }
+      refreshShortcuts(); injectSite(); applyVolume(); pushStore();
+      return { msg: 'Settings imported.' };
+    } catch (err) { return { msg: 'Failed: ' + err.message }; }
+  }
+  if (name === 'data-open') {
+    try { await shell.openPath(app.getPath('userData')); } catch (err) { /* ignore */ }
+    return true;
+  }
+  if (name === 'data-reset') {
+    try { await session.fromPartition(PARTITION).clearStorageData(); } catch (err) { /* ignore */ }
+    const keepLang = null;
+    store = defaultStore();
+    saveStore(); applyAutostart(); refreshShortcuts();
+    injectSite(); applyVolume(); pushStore();
+    return { msg: 'Data cleared. Settings are back to defaults.' };
+  }
+  if (name === 'stats-reset') {
+    store.stats = { tracks: 0, seconds: 0 }; memSec = 0; saveStore(); pushStore(); return true;
+  }
   return false;
 });
 
 /* ---------------- boot ---------------- */
+function openArgUrl(u) {
+  if (!u) return;
+  showMain();
+  const wc = siteWC();
+  if (wc) wc.loadURL(u);
+}
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) { app.quit(); }
 else {
-  app.on('second-instance', showMain);
+  app.on('second-instance', (_e, argv) => {
+    const u = openUrlArg(argv);
+    if (u) openArgUrl(u);
+    else showMain();
+  });
   app.whenReady().then(async () => {
     store = loadStore();
-    logLine('start version=2.0.0');
+    logLine('start version=' + APP_VERSION);
     setupAdblock();
     createMain();
     createPlayer();
@@ -577,19 +824,26 @@ else {
     applyAutostart();
     applyVolume();
     await loadExtensions();
+    updateJumpList();
     startPoll();
     setupShortcuts();
+    const firstUrl = openUrlArg(process.argv);
+    if (firstUrl) openArgUrl(firstUrl);
+    setTimeout(async () => {
+      const r = await checkUpdates();
+      logLine('update check: ' + r.msg);
+    }, 20000);
     app.on('activate', showMain);
   });
   app.on('window-all-closed', () => { /* tray keeps us alive */ });
   app.on('before-quit', () => {
     allowExit = true;
     try {
+      store.stats.seconds = (store.stats.seconds || 0) + memSec;
+      memSec = 0;
       const wc = siteWC();
-      if (wc && wc.getURL().startsWith('http')) {
-        store.lastUrl = wc.getURL();
-        saveStore();
-      }
+      if (wc && wc.getURL().startsWith('http')) store.lastUrl = wc.getURL();
+      saveStore();
     } catch (e) { /* ignore */ }
     globalShortcut.unregisterAll();
   });

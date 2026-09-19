@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SoundCloud Desktop - Lightweight Unofficial SoundCloud Client for Windows and Linux</title>
+  <meta name="description" content="SoundCloud Desktop is the most lightweight unofficial SoundCloud client. Three builds: Classic, Alternative UI with Radix, and single-file Ultra Light. Portable, no installer, login that sticks." />
+  <meta name="keywords" content="soundcloud desktop, soundcloud client, soundcloud app windows, soundcloud player, unofficial soundcloud, soundcloud portable, soundcloud linux, soundcloud redesign, soundcloud adblock" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="ToraScriptCopy" />
+  <link rel="canonical" href="https://torascriptcopy.github.io/soundcloud-desktop/" />
+  <meta name="theme-color" content="#131314" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="SoundCloud Desktop - Lightweight Unofficial Client" />
+  <meta property="og:description" content="Three portable builds. No installer. Login that sticks. ReDesign, PiP player, hotkeys, extensions." />
+  <meta property="og:url" content="https://torascriptcopy.github.io/soundcloud-desktop/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="SoundCloud Desktop" />
+  <meta name="twitter:description" content="The most lightweight unofficial SoundCloud client for Windows and Linux." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="https://github.com/ToraScriptCopy/soundcloud-desktop/raw/main/WpfApp1/assets/sc-icon.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "SoundCloud Desktop",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": ["Windows 10", "Windows 11", "Linux"],
+    "offers": { "@type": "Offer", "price": "0" },
+    "description": "Lightweight unofficial SoundCloud desktop client. Portable builds, persistent login, ReDesign themes, PiP player.",
+    "downloadUrl": "https://github.com/ToraScriptCopy/soundcloud-desktop/releases",
+    "softwareVersion": "3.0",
+    "author": { "@type": "Person", "name": "ToraScriptCopy" }
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <span class="brand"><span class="brand-dot"></span>SoundCloud Desktop</span>
+      <nav>
+        <a href="#builds">Builds</a>
+        <a href="#features">Features</a>
+        <a href="#platforms">Platforms</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="btn btn-primary" href="https://github.com/ToraScriptCopy/soundcloud-desktop/releases">Download</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow">Unofficial fan client</p>
+      <h1>SoundCloud on your desktop,<br />without the weight.</h1>
+      <p class="lede">A 3 MB portable app around the real site. No installer, no services, no telemetry. Login sticks, music keeps playing in the tray.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-large" href="https://github.com/ToraScriptCopy/soundcloud-desktop/releases">Get the latest release</a>
+        <a class="btn btn-outline btn-large" href="https://github.com/ToraScriptCopy/soundcloud-desktop">Source on GitHub</a>
+      </div>
+      <div class="hero-stats">
+        <div><strong>3 MB</strong><span>Classic download</span></div>
+        <div><strong>3</strong><span>builds to pick from</span></div>
+        <div><strong>14</strong><span>themes in Classic</span></div>
+        <div><strong>0</strong><span>installers, services, ads</span></div>
+      </div>
+    </section>
+
+    <section id="builds" class="section">
+      <h2>Pick your build</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Classic</h3>
+          <p class="card-tag">Windows - WPF - 3 MB</p>
+          <p>The main build. Fluent shell, Now playing popup, PiP player, hotkeys, extensions, 14 themes, encrypted local settings.</p>
+        </article>
+        <article class="card card-accent">
+          <h3>Alternative UI <span class="pill">experimental</span></h3>
+          <p class="card-tag">Windows - Electron + Radix</p>
+          <p>The playground build: real Radix Themes interface, 20 extra desktop features, shell themes, sleep timer, stats, update checker.</p>
+        </article>
+        <article class="card">
+          <h3>Ultra Light</h3>
+          <p class="card-tag">Windows x64 + x86 - one exe</p>
+          <p>One file and nothing else. Just SoundCloud in a window, login kept in system files. No settings, no chrome, no noise.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <h2>What is inside</h2>
+      <div class="features">
+        <div><strong>Login that sticks</strong><span>Google, Apple or password. Restart, still signed in.</span></div>
+        <div><strong>Now playing popup</strong><span>Cover art, artist, controls, minimize to tray.</span></div>
+        <div><strong>PiP widget</strong><span>Any track or playlist in an always-on-top window.</span></div>
+        <div><strong>ReDesign flags</strong><span>Every part of the site restyled separately, each with its own toggle.</span></div>
+        <div><strong>Promo killer</strong><span>Become-an-author banners removed automatically.</span></div>
+        <div><strong>Extensions</strong><span>Load unpacked Chrome extensions from a folder.</span></div>
+        <div><strong>Hotkeys</strong><span>Numpad controls that work even unfocused.</span></div>
+        <div><strong>Quiet adblock</strong><span>Off by default, never touches login windows.</span></div>
+      </div>
+    </section>
+
+    <section id="platforms" class="section">
+      <h2>Platforms</h2>
+      <table>
+        <tr><th>Build</th><th>Windows x64</th><th>Windows x86</th><th>Linux x64</th></tr>
+        <tr><td>Classic (WPF)</td><td>Yes</td><td>No</td><td>No - WPF is Windows-only</td></tr>
+        <tr><td>Alternative UI (Electron)</td><td>Yes</td><td>No</td><td>Yes, portable tar</td></tr>
+        <tr><td>Ultra Light</td><td>Yes, single exe</td><td>Yes, single exe</td><td>Run from source, one command</td></tr>
+      </table>
+      <p class="muted">Linux Ultra Light: <code>pip install pywebview</code> then <code>python app.py</code>. Needs WebKitGTK system packages.</p>
+    </section>
+
+    <section id="faq" class="section">
+      <h2>FAQ</h2>
+      <details>
+        <summary>Is this official?</summary>
+        <p>No. Fan project, not affiliated with SoundCloud. All music and trademarks belong to SoundCloud and its artists.</p>
+      </details>
+      <details>
+        <summary>Do I need to install anything?</summary>
+        <p>Classic needs WebView2 Runtime, preinstalled on most Win10/11 machines. Alt and Ultra Light need nothing extra on Windows.</p>
+      </details>
+      <details>
+        <summary>Where is my login stored?</summary>
+        <p>In system files, never next to the exe: Classic uses LocalAppData, Alt uses its Electron profile, Ultra Light uses its own LocalAppData folder.</p>
+      </details>
+      <details>
+        <summary>Something broke after a SoundCloud update?</summary>
+        <p>Playback and login are the real site inside the app. If SoundCloud changes its layout, open an issue on GitHub.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>SoundCloud Desktop - fan project. Not affiliated with SoundCloud.</span>
+      <a href="https://github.com/ToraScriptCopy/soundcloud-desktop">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>
