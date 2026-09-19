@@ -15,16 +15,58 @@ function copyDir(src, dst) {
   for (const name of fs.readdirSync(src)) {
     const s = path.join(src, name);
     const d = path.join(dst, name);
-    const st = fs.statSync(s);
-    if (st.isDirectory()) copyDir(s, d);
-    else fs.copyFileSync(s, d);
+    try {
+      const lst = fs.lstatSync(s);
+      if (lst.isSymbolicLink()) {
+        try { if (fs.existsSync(d)) fs.rmSync(d, { force: true }); } catch (e) { /* ignore */ }
+        fs.symlinkSync(fs.readlinkSync(s), d);
+        continue;
+      }
+      const st = fs.statSync(s);
+      if (st.isDirectory()) copyDir(s, d);
+      else fs.copyFileSync(s, d);
+    } catch (e) {
+      console.error('copy skipped ' + s + ': ' + e.message);
+    }
   }
 }
 
-if (!fs.existsSync(dist)) {
-  console.error('Electron dist not found. Run npm install first.');
-  process.exit(1);
+function electronDistName() {
+  const p = process.platform + '-' + process.arch;
+  if (p === 'darwin-x64' || p === 'darwin-arm64' || p === 'linux-x64' || p === 'win32-x64') return p;
+  throw new Error('unsupported pack target: ' + p);
 }
+
+function ensureDist() {
+  const marker =
+    fs.existsSync(path.join(dist, 'Electron.app')) ? path.join(dist, 'Electron.app') :
+    fs.existsSync(path.join(dist, 'electron.exe')) ? path.join(dist, 'electron.exe') :
+    fs.existsSync(path.join(dist, 'electron')) ? path.join(dist, 'electron') : null;
+  if (marker) {
+    console.log('electron runtime found: ' + marker);
+    return;
+  }
+  const ver = require(path.join(root, 'node_modules', 'electron', 'package.json')).version;
+  const target = electronDistName();
+  const zip = path.join(root, 'electron-' + target + '.zip');
+  const url = 'https://github.com/electron/electron/releases/download/v' + ver + '/electron-v' + ver + '-' + target + '.zip';
+  console.log('downloading ' + url);
+  const { spawnSync } = require('child_process');
+  let r = spawnSync('curl', ['-sL', '-o', zip, url], { stdio: 'inherit' });
+  if (r.status !== 0) throw new Error('curl download failed');
+  const unzip = process.platform === 'win32' ? null : 'unzip';
+  if (process.platform === 'win32') {
+    const { execSync } = require('child_process');
+    execSync('powershell -NoProfile -Command "Expand-Archive -Path \'' + zip + '\' -DestinationPath \'' + dist + '\' -Force"');
+  } else {
+    r = spawnSync('unzip', ['-q', zip, '-d', dist], { stdio: 'inherit' });
+    if (r.status !== 0) throw new Error('unzip failed');
+  }
+  console.log('electron runtime ready');
+}
+
+console.log('pack target platform: ' + process.platform + '-' + process.arch);
+ensureDist();
 if (fs.existsSync(out)) fs.rmSync(out, { recursive: true, force: true });
 
 copyDir(dist, out);
