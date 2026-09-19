@@ -11,17 +11,7 @@ namespace WpfApp1
         public AuthWindow()
         {
             InitializeComponent();
-            Loaded += delegate
-            {
-                Opacity = 0;
-                var fade = new System.Windows.Media.Animation.DoubleAnimation(
-                    0, 1, new Duration(TimeSpan.FromMilliseconds(320)));
-                fade.EasingFunction = new System.Windows.Media.Animation.CubicEase
-                {
-                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-                };
-                BeginAnimation(OpacityProperty, fade);
-            };
+            Loaded += delegate { Fx.Fade(this, 200); };
         }
 
         public async void OpenPopupAsync(CoreWebView2Environment env, CoreWebView2NewWindowRequestedEventArgs e, CoreWebView2Deferral deferral)

@@ -17,17 +17,7 @@ namespace WpfApp1
             RefreshFromState();
             ApplyLoc();
             _initialized = true;
-            Loaded += delegate
-            {
-                Opacity = 0;
-                var fade = new System.Windows.Media.Animation.DoubleAnimation(
-                    0, 1, new Duration(TimeSpan.FromMilliseconds(320)));
-                fade.EasingFunction = new System.Windows.Media.Animation.CubicEase
-                {
-                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-                };
-                BeginAnimation(OpacityProperty, fade);
-            };
+            Loaded += delegate { Fx.Fade(this, 200); };
         }
         private void RefreshFromState()
         {
@@ -41,11 +31,25 @@ namespace WpfApp1
             TrayHideSwitch.IsChecked = _state.TrayHide;
             AutostartSwitch.IsChecked = _state.Autostart;
             AdBlockSwitch.IsChecked = _state.AdBlockOn;
+            SiteAnimsSwitch.IsChecked = _state.SiteAnims;
+            ReDesignSwitch.IsChecked = _state.ReDesign;
+            PlayerPopupSwitch.IsChecked = _state.PlayerPopup;
+            RefreshExtList();
             Loc.FillKeyCombo(HotPrevBox, _state.HotPrev);
             Loc.FillKeyCombo(HotPlayBox, _state.HotPlay);
             Loc.FillKeyCombo(HotNextBox, _state.HotNext);
             Loc.FillKeyCombo(HotVolDnBox, _state.HotVolDn);
             Loc.FillKeyCombo(HotVolUpBox, _state.HotVolUp);
+        }
+        private void RefreshExtList()
+        {
+            try
+            {
+                ExtList.Items.Clear();
+                if (_state.Extensions != null)
+                    foreach (string d in _state.Extensions) ExtList.Items.Add(d);
+            }
+            catch { }
         }
         private bool _applyingLoc;
         private void ApplyLoc()
@@ -97,6 +101,12 @@ namespace WpfApp1
             TrayHideSwitch.Content = Loc.Get("TrayHide");
             AutostartSwitch.Content = Loc.Get("Autostart");
             AdBlockSwitch.Content = Loc.Get("AdBlockLbl");
+            SiteAnimsSwitch.Content = Loc.Get("SiteAnims");
+            ReDesignSwitch.Content = Loc.Get("ReDesign");
+            PlayerPopupSwitch.Content = Loc.Get("PlayerPopup");
+            ExtHeader.Text = Loc.Get("ExtGroup");
+            ExtAddBtn.Content = Loc.Get("ExtAdd");
+            ExtDelBtn.Content = Loc.Get("ExtDel");
             BindsHeader.Text = Loc.Get("BindsGroup");
             HotPrevLbl.Text = Loc.Get("HotPrev");
             HotPlayLbl.Text = Loc.Get("HotPlay");
@@ -157,6 +167,55 @@ namespace WpfApp1
             _state.AdBlockOn = AdBlockSwitch.IsChecked == true;
             AdBlock.Enabled = _state.AdBlockOn;
             _owner.SaveAllState();
+            _owner.ReapplySiteCss();
+        }
+        private void SiteAnimsSwitch_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_initialized) return;
+            _state.SiteAnims = SiteAnimsSwitch.IsChecked == true;
+            _owner.SaveAllState();
+            _owner.ReapplySiteCss();
+        }
+        private void ReDesignSwitch_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_initialized) return;
+            _state.ReDesign = ReDesignSwitch.IsChecked == true;
+            _owner.SaveAllState();
+            _owner.ReapplySiteCss();
+        }
+        private void PlayerPopupSwitch_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_initialized) return;
+            _state.PlayerPopup = PlayerPopupSwitch.IsChecked == true;
+            _owner.SaveAllState();
+        }
+        private async void ExtAddBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dlg = new System.Windows.Forms.FolderBrowserDialog();
+                dlg.Description = Loc.Get("ExtAdd");
+                if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    bool ok = await _owner.InstallExtensionAsync(dlg.SelectedPath);
+                    CacheStatus.Text = ok ? Loc.Get("ExtOk") : Loc.Get("ErrTitle");
+                    RefreshExtList();
+                }
+            }
+            catch { }
+        }
+        private void ExtDelBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (ExtList.SelectedIndex < 0 || _state.Extensions == null) return;
+                int i = ExtList.SelectedIndex;
+                if (i >= 0 && i < _state.Extensions.Count) _state.Extensions.RemoveAt(i);
+                _owner.SaveAllState();
+                RefreshExtList();
+                CacheStatus.Text = Loc.Get("VaultResetDone");
+            }
+            catch { }
         }
         private void HotBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

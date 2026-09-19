@@ -46,24 +46,17 @@ namespace WpfApp1
             + "||document.querySelector('.skipControl__previous');"
             + "if(!b)return 'no-btn';b.click();return 'ok';})()";
         private const string JsPoll =
-            "(function(){var t=0,d=0;"
+            "(function(){var t=0,d=0,playing=false,title='',art='',artist='';"
             + "try{var a=document.querySelector('audio');"
-            + "if(a){t=Math.floor(a.currentTime||0);d=Math.floor(a.duration||0);}}catch(e){}"
-            + "try{if(window.__scPipUpdate)window.__scPipUpdate(location.href);}catch(e){}"
-            + "return t+'|'+d+'|'+encodeURIComponent(document.title);})()";
-        private const string JsPipButton =
-            @"(function(){if(window.__scPip)return;window.__scPip=true;
-var css=document.createElement('style');css.id='__scPipCss';
-css.textContent='#__scPipBtn{position:fixed;right:20px;top:14px;z-index:999999;width:54px;height:54px;border-radius:50%;border:none;background:#ff5500;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;}#__scPipBtn:hover{background:#e04a00;}#__scPipBtn svg{display:block;margin:auto;}';
-(document.head||document.documentElement).appendChild(css);
-var b=document.createElement('button');b.id='__scPipBtn';b.title='PiP';
-b.innerHTML=""<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 9V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4'/><rect width='10' height='7' x='12' y='13' rx='2'/></svg>"";
-b.onclick=function(){try{window.chrome.webview.postMessage('pip:'+location.href);}catch(e){}};
-document.body.appendChild(b);
-window.__scPipUpdate=function(url){try{var show=false;
-try{show=/(^|\.)soundcloud\.com$/.test(location.hostname)&&/^\/[^\/]+\/[^\/]+/.test(location.pathname)&&!/^\/(charts|search|you|discover|feed|library|settings|notifications|messages|upload|popular|terms|pages)(\/|$)/.test(location.pathname);}catch(e){}
-b.style.display=show?'flex':'none';}catch(e){}};
-window.__scPipUpdate(location.href);})()";
+            + "if(a){t=Math.floor(a.currentTime||0);d=Math.floor(a.duration||0);playing=!a.paused;}}catch(e){}"
+            + "try{title=document.title||'';}catch(e){}"
+            + "try{var ti=document.querySelector('.playbackSoundBadge__titleLink');"
+            + "if(ti&&(ti.title||ti.textContent))title=ti.title||ti.textContent;}catch(e){}"
+            + "try{var ar=document.querySelector('.playbackSoundBadge__lightLink');"
+            + "if(ar&&(ar.title||ar.textContent))artist=ar.title||ar.textContent;}catch(e){}"
+            + "try{var im=document.querySelector('.playbackSoundBadge__avatar img')||document.querySelector('.playControls__soundBadge img');"
+            + "if(im&&im.src)art=im.src;}catch(e){}"
+            + "return t+'|'+d+'|'+encodeURIComponent(title)+'|'+(playing?'1':'0')+'|'+encodeURIComponent(art)+'|'+encodeURIComponent(artist);})()";
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
         [DllImport("user32.dll", SetLastError = true)]
@@ -71,9 +64,14 @@ window.__scPipUpdate(location.href);})()";
         private bool _initialized;
         private bool _polling;
         private bool _hasTitle;
+        private bool _wasPlaying;
+        private string _lastTrackKey = "";
+        private double _lastSentVol = -1;
+        private bool _lastSentMute;
         private AppState _state;
         private PipWindow _pip;
         private string _pipUrl = "";
+        private PlayerWindow _player;
         private CoreWebView2Environment _env;
         private SettingsWindow _settingsWin;
         private double _lastVolume = 0.8;
@@ -101,23 +99,11 @@ window.__scPipUpdate(location.href);})()";
             Topmost = _state.Topmost;
             SetupTray();
             ApplyAutostart();
-            Loaded += delegate
-            {
-                FadeIn(this, 450);
-                var tt = new System.Windows.Media.TranslateTransform(0, 18);
-                MainContent.RenderTransform = tt;
-                var slide = new System.Windows.Media.Animation.DoubleAnimation(
-                    18, 0, new Duration(TimeSpan.FromMilliseconds(450)));
-                slide.EasingFunction = new System.Windows.Media.Animation.CubicEase
-                {
-                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-                };
-                tt.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, slide);
-            };
+            Loaded += delegate { Fx.Fade(this, 260); };
             if (tampered)
                 Snack(Loc.Get("ErrTitle"), Loc.Get("VaultBroken"),
                     UiControls.ControlAppearance.Caution);
-            _poll.Interval = TimeSpan.FromSeconds(1);
+            _poll.Interval = TimeSpan.FromMilliseconds(1500);
             _poll.Tick += Poll_Tick;
             _poll.Start();
             InitBrowser();
@@ -143,49 +129,15 @@ window.__scPipUpdate(location.href);})()";
             }
             else
             {
-                SidebarView.Width = 240;
+                SidebarView.Width = 210;
                 SidebarView.Visibility = Visibility.Visible;
             }
         }
         private void AnimateSidebar()
         {
-            SidebarCol.Width = GridLength.Auto;
-            double from = SidebarView.Width;
-            if (_state.SidebarOpen)
-            {
-                SidebarView.Visibility = Visibility.Visible;
-                if (double.IsNaN(from)) from = 0;
-                var anim = new System.Windows.Media.Animation.DoubleAnimation(
-                    from, 240, new Duration(TimeSpan.FromMilliseconds(300)));
-                anim.EasingFunction = new System.Windows.Media.Animation.CubicEase
-                {
-                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-                };
-                SidebarView.BeginAnimation(FrameworkElement.WidthProperty, anim);
-            }
-            else
-            {
-                if (double.IsNaN(from)) from = 240;
-                var anim = new System.Windows.Media.Animation.DoubleAnimation(
-                    from, 0, new Duration(TimeSpan.FromMilliseconds(300)));
-                anim.EasingFunction = new System.Windows.Media.Animation.CubicEase
-                {
-                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-                };
-                anim.Completed += delegate { SidebarView.Visibility = Visibility.Collapsed; };
-                SidebarView.BeginAnimation(FrameworkElement.WidthProperty, anim);
-            }
-        }
-        private void FadeIn(UIElement el, int ms)
-        {
-            el.Opacity = 0;
-            var anim = new System.Windows.Media.Animation.DoubleAnimation(
-                0, 1, new Duration(TimeSpan.FromMilliseconds(ms)));
-            anim.EasingFunction = new System.Windows.Media.Animation.CubicEase
-            {
-                EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-            };
-            el.BeginAnimation(UIElement.OpacityProperty, anim);
+            // Instant toggle plus fade: smooth and never lags WebView2.
+            ApplySidebar();
+            if (_state.SidebarOpen) Fx.Fade(SidebarView, 180);
         }
         public void ApplyLocPublic() { ApplyLoc(); }
         private void ApplyLoc()
@@ -197,7 +149,7 @@ window.__scPipUpdate(location.href);})()";
             BtnHome.ToolTip = HomeUrl;
             AddrBox.PlaceholderText = Loc.Get("AddrPh");
             BtnGo.Content = Loc.Get("Go");
-            BtnPipHere.ToolTip = Loc.Get("TipPipHere");
+            BtnPipMini.ToolTip = Loc.Get("TipPipHere");
             BtnSettings.ToolTip = Loc.Get("SettingsTitle");
             NavHomeTxt.Text = Loc.Get("NavHome");
             NavChartsTxt.Text = Loc.Get("NavCharts");
@@ -212,6 +164,8 @@ window.__scPipUpdate(location.href);})()";
             MuteSwitch.Content = Loc.Get("Mute");
             BuildTrayMenu();
             try { if (_pip != null) _pip.ApplyLocPublic(); }
+            catch { }
+            try { if (_player != null) _player.ApplyLocPublic(); }
             catch { }
             if (!_hasTitle) NowPlaying.Text = Loc.Get("IdleTrack");
         }
@@ -229,7 +183,6 @@ window.__scPipUpdate(location.href);})()";
             _state.Lang = langKept;
             Loc.Current = Loc.Resolve(_state.Lang);
             AdBlock.Enabled = _state.AdBlockOn;
-            AdBlock.Enabled = _state.AdBlockOn;
             ApplyStateToUi();
             ApplyLoc();
             BuildTrayMenu();
@@ -237,7 +190,7 @@ window.__scPipUpdate(location.href);})()";
             Topmost = _state.Topmost;
             ApplyAutostart();
             RefreshHotkeys();
-            FireJs(SiteCssJs(_state.HideHeader));
+            FireJs(SiteCssJs());
             NavigateSmart(HomeUrl);
             SaveAllState();
         }
@@ -282,9 +235,12 @@ window.__scPipUpdate(location.href);})()";
             var menu = new System.Windows.Forms.ContextMenu();
             var open = new System.Windows.Forms.MenuItem(Loc.Get("TrayOpen"));
             open.Click += delegate { ShowMain(); };
+            var player = new System.Windows.Forms.MenuItem(Loc.Get("PlayerTitle"));
+            player.Click += delegate { ShowPlayerWindow("", "", "", "", _wasPlaying); ShowMain(); };
             var exit = new System.Windows.Forms.MenuItem(Loc.Get("TrayExit"));
             exit.Click += delegate { _allowExit = true; Close(); };
             menu.MenuItems.Add(open);
+            menu.MenuItems.Add(player);
             menu.MenuItems.Add(exit);
             _tray.ContextMenu = menu;
         }
@@ -295,6 +251,22 @@ window.__scPipUpdate(location.href);})()";
                 Show();
                 WindowState = WindowState.Normal;
                 Activate();
+            }
+            catch { }
+        }
+        public void MinimizeToTray()
+        {
+            try
+            {
+                if (_player != null) _player.Hide();
+                Hide();
+                if (_tray != null)
+                {
+                    _tray.BalloonTipTitle = "SoundCloud Desktop";
+                    _tray.BalloonTipText = Loc.Get("TrayHidden");
+                    try { _tray.ShowBalloonTip(1500); }
+                    catch { }
+                }
             }
             catch { }
         }
@@ -349,37 +321,30 @@ window.__scPipUpdate(location.href);})()";
         private async void OnHotkey(int id)
         {
             if (!_initialized) return;
-            if (id == 1)
-            {
-                if (await ClickPlayerAsync(JsPrev) != "no-btn") await UpdateTitleAsync();
-            }
-            else if (id == 2)
-            {
-                string r = await ClickPlayerAsync(JsToggle);
-                if (r == "playing" || r == "paused") await UpdateTitleAsync();
-            }
-            else if (id == 3)
-            {
-                if (await ClickPlayerAsync(JsNext) != "no-btn") await UpdateTitleAsync();
-            }
-            else if (id == 4)
-            {
-                VolSlider.Value = Math.Max(0, VolSlider.Value - 5);
-            }
-            else if (id == 5)
-            {
-                VolSlider.Value = Math.Min(100, VolSlider.Value + 5);
-            }
+            if (id == 1) await PrevAsync();
+            else if (id == 2) await TogglePlayAsync();
+            else if (id == 3) await NextAsync();
+            else if (id == 4) VolSlider.Value = Math.Max(0, VolSlider.Value - 5);
+            else if (id == 5) VolSlider.Value = Math.Min(100, VolSlider.Value + 5);
         }
+        public async Task<string> TogglePlayAsync()
+        {
+            string r = await ClickPlayerAsync(JsToggle);
+            if (r == "playing" || r == "paused") await UpdateTitleAsync();
+            return r;
+        }
+        public async Task NextAsync()
+        {
+            if (await ClickPlayerAsync(JsNext) != "no-btn") await UpdateTitleAsync();
+        }
+        public async Task PrevAsync()
+        {
+            if (await ClickPlayerAsync(JsPrev) != "no-btn") await UpdateTitleAsync();
+        }
+        // Minimal flags so cookies, login and extensions keep working.
         private static readonly string EngineArgs =
-            "--disable-features=Translate,OptimizationHints,MediaRouter" +
-            " --autoplay-policy=no-user-gesture-required" +
-            " --renderer-process-limit=1" +
-            " --disable-background-networking --disable-sync --disable-default-apps" +
-            " --no-first-run --no-default-browser-check" +
-            " --disable-component-extensions-with-background-pages --disable-component-update" +
-            " --disable-breakpad --disable-logging --log-level=3" +
-            " --disk-cache-size=134217728";
+            "--autoplay-policy=no-user-gesture-required"
+            + " --disable-features=Translate,MediaRouter,OptimizationHints";
         private async void InitBrowser()
         {
             try
@@ -392,8 +357,8 @@ window.__scPipUpdate(location.href);})()";
                 var settings = Browser.CoreWebView2.Settings;
                 settings.AreDevToolsEnabled = false;
                 settings.IsStatusBarEnabled = false;
-                settings.IsGeneralAutofillEnabled = false;
-                settings.IsPasswordAutosaveEnabled = false;
+                settings.IsGeneralAutofillEnabled = true;
+                settings.IsPasswordAutosaveEnabled = true;
                 try
                 {
                     Browser.CoreWebView2.Profile.PreferredColorScheme = Themes.IsDark(_state.Theme)
@@ -406,7 +371,7 @@ window.__scPipUpdate(location.href);})()";
                 Browser.CoreWebView2.NewWindowRequested += Browser_NewWindowRequested;
                 Browser.SourceChanged += Browser_SourceChanged;
                 Browser.NavigationCompleted += Browser_NavigationCompleted;
-                Browser.WebMessageReceived += Browser_WebMessageReceived;
+                await LoadExtensionsAsync();
                 ApplyVolumeNow();
                 NavigateSmart(_state.LastUrl);
             }
@@ -423,8 +388,44 @@ window.__scPipUpdate(location.href);})()";
                     "OK", CancellationToken.None);
             }
         }
+        private async Task LoadExtensionsAsync()
+        {
+            try
+            {
+                if (Browser == null || Browser.CoreWebView2 == null) return;
+                if (_state.Extensions == null || _state.Extensions.Count == 0) return;
+                foreach (string dir in _state.Extensions)
+                {
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+                            await Browser.CoreWebView2.Profile.AddBrowserExtensionAsync(dir);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+        }
+        public async Task<bool> InstallExtensionAsync(string dir)
+        {
+            try
+            {
+                if (Browser == null || Browser.CoreWebView2 == null) return false;
+                if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) return false;
+                await Browser.CoreWebView2.Profile.AddBrowserExtensionAsync(dir);
+                if (_state.Extensions == null) _state.Extensions = new System.Collections.Generic.List<string>();
+                bool exists = false;
+                foreach (string d in _state.Extensions)
+                    if (string.Equals(d, dir, StringComparison.OrdinalIgnoreCase)) exists = true;
+                if (!exists) _state.Extensions.Add(dir);
+                SaveAllState();
+                return true;
+            }
+            catch { return false; }
+        }
         private void Browser_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
         {
+            // Every popup is a potential login window. Never block it.
             e.Handled = true;
             var deferral = e.GetDeferral();
             try
@@ -462,30 +463,15 @@ window.__scPipUpdate(location.href);})()";
         {
             if (!_initialized) return;
             UpdateNavButtons();
-            await RunJs(JsPipButton);
-            await RunJs(SiteCssJs(_state.HideHeader));
+            await RunJs(SiteCssJs());
             await UpdateTitleAsync();
+            _lastSentVol = -1;
             await ApplyVolumeAsync();
         }
-        private void Browser_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        private string SiteCssJs()
         {
-            string msg = "";
-            try { msg = e.TryGetWebMessageAsString(); }
-            catch { return; }
-            if (msg != null && msg.StartsWith("pip:", StringComparison.Ordinal))
-            {
-                string url = msg.Substring(4);
-                Dispatcher.BeginInvoke(new Action(delegate { OpenPipForUrl(url, true); }));
-            }
-        }
-        private static string SiteCssJs(bool hide)
-        {
-            string css = (hide ? "header.header{display:none!important;}" : "") + AdBlock.CosmeticCss;
-            css = css.Replace("\\", "\\\\").Replace("'", "\\'");
-            return "(function(){var s=document.getElementById('__scNative');"
-                + "if(!s){s=document.createElement('style');s.id='__scNative';"
-                + "(document.head||document.documentElement).appendChild(s);}"
-                + "s.textContent='" + css + "';})()";
+            string css = SiteExtras.BuildCss(_state.HideHeader, _state.SiteAnims, _state.ReDesign, AdBlock.Enabled);
+            return SiteExtras.ToJs(css);
         }
         private void UpdateNavButtons()
         {
@@ -625,6 +611,8 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             }
             catch { }
             double v = MuteSwitch.IsChecked == true ? 0 : VolSlider.Value / 100.0;
+            _lastSentVol = v;
+            _lastSentMute = MuteSwitch.IsChecked == true;
             FireJs(VolumeJs(v));
         }
         private async Task ApplyVolumeAsync()
@@ -637,6 +625,9 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             }
             catch { }
             double v = muted ? 0 : VolSlider.Value / 100.0;
+            if (Math.Abs(v - _lastSentVol) < 0.001 && muted == _lastSentMute) return;
+            _lastSentVol = v;
+            _lastSentMute = muted;
             for (int i = 0; i < 3; i++)
             {
                 string[] p = Unquote(await RunJs(VolumeJs(v))).Split('|');
@@ -666,21 +657,47 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             try
             {
                 string[] p = Unquote(await RunJs(JsPoll)).Split('|');
-                if (p.Length >= 3)
+                if (p.Length >= 6)
                 {
                     string title = SafeUnescape(p[2]);
+                    bool playing = p[3] == "1";
+                    string art = SafeUnescape(p[4]);
+                    string artist = SafeUnescape(p[5]);
                     if (!string.IsNullOrWhiteSpace(title) && title != "null")
                     {
                         _hasTitle = true;
                         string time = FmtTime(p[0]) + " / " + FmtTime(p[1]);
-                        NowPlaying.Text = (p[1] != "0" && p[1].Length > 0 ? time + "  •  " : "") + title;
+                        NowPlaying.Text = (p[1] != "0" && p[1].Length > 0 ? time + "  -  " : "") + title;
                     }
-                    double v = MuteSwitch.IsChecked == true ? 0 : VolSlider.Value / 100.0;
-                    FireJs(VolumeJs(v));
+                    string key = title + "||" + artist;
+                    if (playing && _state.PlayerPopup && (!_wasPlaying || key != _lastTrackKey))
+                        ShowPlayerWindow(title, artist, art, FmtTime(p[0]) + " / " + FmtTime(p[1]), true);
+                    else if (_player != null && _player.IsVisible)
+                        _player.UpdateInfo(title, artist, art, FmtTime(p[0]) + " / " + FmtTime(p[1]), playing);
+                    _wasPlaying = playing;
+                    _lastTrackKey = key;
                 }
             }
             catch { }
             _polling = false;
+        }
+        private void ShowPlayerWindow(string title, string artist, string art, string time, bool playing)
+        {
+            try
+            {
+                if (_player == null)
+                {
+                    _player = new PlayerWindow(this);
+                    _player.Closed += delegate { _player = null; };
+                    var area = SystemParameters.WorkArea;
+                    _player.Left = area.Right - _player.Width - 20;
+                    _player.Top = area.Bottom - _player.Height - 20;
+                }
+                _player.UpdateInfo(title, artist, art, time, playing);
+                if (!_player.IsVisible) _player.Show();
+                else if (_player.WindowState == WindowState.Minimized) _player.WindowState = WindowState.Normal;
+            }
+            catch { }
         }
         private async Task<string> ClickPlayerAsync(string js)
         {
@@ -700,6 +717,7 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             if (VolSlider.Value > 0 && MuteSwitch != null && MuteSwitch.IsChecked == true)
                 MuteSwitch.IsChecked = false;
             if (VolSlider.Value > 0) _lastVolume = VolSlider.Value / 100.0;
+            UpdateVolIcon();
             await ApplyVolumeAsync();
         }
         private async void MuteSwitch_Changed(object sender, RoutedEventArgs e)
@@ -737,7 +755,7 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
         }
         public void ReapplySiteCss()
         {
-            FireJs(SiteCssJs(_state.HideHeader));
+            FireJs(SiteCssJs());
         }
         public void ApplyThemeNow()
         {
@@ -772,12 +790,13 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             else
             {
                 Browser.Visibility = Visibility.Visible;
-                _poll.Interval = TimeSpan.FromSeconds(1);
+                _poll.Interval = TimeSpan.FromMilliseconds(1500);
             }
         }
         private void BtnPipPlay_Click(object sender, RoutedEventArgs e) { OpenPipForUrl(PlaylistOrCurrent(), true); }
         private void BtnPipOpen_Click(object sender, RoutedEventArgs e) { OpenPipForUrl(PlaylistOrCurrent(), false); }
-        private void BtnPipHere_Click(object sender, RoutedEventArgs e) { OpenPipForUrl(PlaylistOrCurrent(), true); }
+        private void BtnPipMini_Click(object sender, RoutedEventArgs e) { OpenPipForUrl(PlaylistOrCurrent(), true); }
+        public void OpenPipForCurrent() { OpenPipForUrl(PlaylistOrCurrent(), true); }
         private void PlaylistBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter) OpenPipForUrl(PlaylistOrCurrent(), true);

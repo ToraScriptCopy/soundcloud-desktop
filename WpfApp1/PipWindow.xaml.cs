@@ -11,9 +11,7 @@ namespace WpfApp1
             "(function(){var s=document.getElementById('__scPipAd');"
             + "if(!s){s=document.createElement('style');s.id='__scPipAd';"
             + "(document.head||document.documentElement).appendChild(s);}"
-            + "s.textContent=\"[class*='upsell'],[class*='Upsell'],[class*='promo'],"
-            + "[class*='Promo'],[id*='promo'],[class*='advert'],[class*='Advert'],"
-            + "[class*='appBanner'],[class*='AppBanner']{display:none!important;}\";})()";
+            + "s.textContent=\"[id*='adSlot']:not([class*='auth']):not([class*='login']){display:none!important;}\";})()";
         private readonly string _pageUrl;
         private readonly bool _autoplay;
         public PipWindow(string pageUrl, bool autoplay)
@@ -23,17 +21,7 @@ namespace WpfApp1
             _autoplay = autoplay;
             PipTitle.Text = Loc.Get("PipTitle");
             PipCloseItem.Header = Loc.Get("TipClose");
-            Loaded += delegate
-            {
-                Opacity = 0;
-                var fade = new System.Windows.Media.Animation.DoubleAnimation(
-                    0, 1, new Duration(TimeSpan.FromMilliseconds(320)));
-                fade.EasingFunction = new System.Windows.Media.Animation.CubicEase
-                {
-                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-                };
-                BeginAnimation(OpacityProperty, fade);
-            };
+            Loaded += delegate { Fx.Fade(this, 200); };
             Loaded += PipWindow_Loaded;
         }
         public static string BuildWidgetUrl(string pageUrl, bool autoplay)

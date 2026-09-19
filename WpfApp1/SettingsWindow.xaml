@@ -6,34 +6,22 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="Настройки" Height="640" Width="430"
-        MinHeight="480" MinWidth="380"
+        Title="Settings" Height="700" Width="440"
+        MinHeight="520" MinWidth="380"
         WindowStartupLocation="CenterOwner"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
         WindowCornerPreference="Round">
     <Grid>
-        <Grid.Background>
-            <DrawingBrush TileMode="Tile" Viewport="0,0 24,24"
-                          ViewportUnits="Absolute" Stretch="None" Opacity="0.06">
-                <DrawingBrush.Drawing>
-                    <GeometryDrawing Brush="White">
-                        <GeometryDrawing.Geometry>
-                            <EllipseGeometry Center="3,3" RadiusX="1.5" RadiusY="1.5"/>
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                </DrawingBrush.Drawing>
-            </DrawingBrush>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ui:TitleBar x:Name="SetBar" Grid.Row="0" Title="Настройки"/>
+        <ui:TitleBar x:Name="SetBar" Grid.Row="0" Title="Settings" Height="30"/>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="16,4,16,16">
+            <StackPanel Margin="16,2,16,16">
                 <TextBlock x:Name="LangLabel2" Margin="2,0,0,4" FontSize="12"/>
                 <ComboBox x:Name="LangBox2" SelectionChanged="LangBox2_SelectionChanged"/>
 
@@ -48,8 +36,25 @@
                                  Checked="TrayHideSwitch_Changed" Unchecked="TrayHideSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="AutostartSwitch" Margin="0,6,0,0"
                                  Checked="AutostartSwitch_Changed" Unchecked="AutostartSwitch_Changed"/>
-                <ui:ToggleSwitch x:Name="AdBlockSwitch" Margin="0,6,0,14"
+                <ui:ToggleSwitch x:Name="AdBlockSwitch" Margin="0,6,0,0"
                                  Checked="AdBlockSwitch_Changed" Unchecked="AdBlockSwitch_Changed"/>
+                <ui:ToggleSwitch x:Name="SiteAnimsSwitch" Margin="0,6,0,0"
+                                 Checked="SiteAnimsSwitch_Changed" Unchecked="SiteAnimsSwitch_Changed"/>
+                <ui:ToggleSwitch x:Name="ReDesignSwitch" Margin="0,6,0,0"
+                                 Checked="ReDesignSwitch_Changed" Unchecked="ReDesignSwitch_Changed"/>
+                <ui:ToggleSwitch x:Name="PlayerPopupSwitch" Margin="0,6,0,14"
+                                 Checked="PlayerPopupSwitch_Changed" Unchecked="PlayerPopupSwitch_Changed"/>
+
+                <TextBlock x:Name="ExtHeader" Margin="2,0,0,6" FontSize="11" Opacity="0.6" FontWeight="SemiBold"/>
+                <ListBox x:Name="ExtList" Height="70" Margin="0,0,0,6"/>
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:Button x:Name="ExtAddBtn" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,4,0" Click="ExtAddBtn_Click"/>
+                    <ui:Button x:Name="ExtDelBtn" Grid.Column="1" Click="ExtDelBtn_Click"/>
+                </Grid>
 
                 <TextBlock x:Name="BindsHeader" Margin="2,0,0,6" FontSize="11" Opacity="0.6" FontWeight="SemiBold"/>
                 <Grid Margin="0,0,0,2">

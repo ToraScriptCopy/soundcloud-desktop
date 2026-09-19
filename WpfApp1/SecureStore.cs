@@ -22,6 +22,10 @@ namespace WpfApp1
         [DataMember] public bool TrayHide { get; set; }
         [DataMember] public bool Autostart { get; set; }
         [DataMember] public bool AdBlockOn { get; set; }
+        [DataMember] public bool SiteAnims { get; set; }
+        [DataMember] public bool ReDesign { get; set; }
+        [DataMember] public bool PlayerPopup { get; set; }
+        [DataMember] public List<string> Extensions { get; set; }
         [DataMember] public int HotPrev { get; set; }
         [DataMember] public int HotPlay { get; set; }
         [DataMember] public int HotNext { get; set; }
@@ -40,7 +44,11 @@ namespace WpfApp1
             Topmost = false;
             TrayHide = true;
             Autostart = false;
-            AdBlockOn = true;
+            AdBlockOn = false;
+            SiteAnims = false;
+            ReDesign = false;
+            PlayerPopup = true;
+            Extensions = new List<string>();
             HotPrev = 0x61;
             HotPlay = 0x62;
             HotNext = 0x63;
@@ -55,6 +63,7 @@ namespace WpfApp1
             if (string.IsNullOrWhiteSpace(LastUrl)) LastUrl = "https://soundcloud.com/";
             if (PlaylistUrl == null) PlaylistUrl = "";
             if (Lang == null) Lang = "auto";
+            if (Extensions == null) Extensions = new List<string>();
         }
     }
     [DataContract]

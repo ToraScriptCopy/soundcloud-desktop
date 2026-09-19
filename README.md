@@ -1,44 +1,43 @@
 # SoundCloud Desktop
 
-Fan-made Windows client for SoundCloud. The site wrapped in a native Fluent shell, plus a PiP player, global hotkeys, volume that actually sticks, tracker blocking and encrypted local settings.
+Просто нормальный клиент SoundCloud для Windows. Открыл, включил музыку, свернул в трей. Ничего лишнего.
 
-> Fan project, not affiliated with SoundCloud. Built for fun — not to make money off anyone or claim anything. All music, the name and the logo belong to SoundCloud and its artists. SoundCloud itself was founded by Alexander Ljung and Eric Wahlforss.
+> Это фанатский проект, я не имею отношения к SoundCloud. Вся музыка, название и логотип принадлежат SoundCloud и артистам.
 
-## Get it
+## Скачать
 
-Check [Releases](../../releases):
+Заходи в [Releases](../../releases) и бери свежий zip.
 
-- **Setup.exe** — normal install into Program Files, shortcuts, uninstall entry.
-- **Portable zip** — unpack anywhere, run `WpfApp1.exe`.
+Установка не нужна вообще. Распаковал куда хочешь и запустил `SoundCloudDesk.exe`. Установщик я убрал, он только мешался и постоянно ломался.
 
-Both need [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) — it's preinstalled on most Win10/11 machines, the installer will tell you if it's missing.
+Нужен только [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). На Win10 и Win11 он обычно уже стоит.
 
-## What's inside
+## Что тут есть
 
-- PiP widget player, always on top, drag it by the slim header
-- Global numpad hotkeys (1/2/3 prev/play/next, 4/5 volume), rebindable in settings
-- 10 Fluent themes, 10 interface languages with auto-detect
-- Engine picker: built-in Chromium, or Edge/Chrome with your own profile
-- Host + pattern adblock (strict mode included), works in PiP too
-- Settings vault: JSON + SHA256, DPAPI-encrypted for your Windows user
-- Tray icon, autostart, collapsible sidebar, installer + uninstaller
+- Вход запоминается. Залогинился через Google, Apple или как удобно, перезапустил - ты все еще в аккаунте
+- Отдельное окно "Сейчас играет". Появляется когда стартует трек, там обложка, автор, кнопки и свернуть в трей
+- PiP плеер для трека или плейлиста. Кнопка теперь внизу, рядом с громкостью, а не торчит сверху
+- Анимации сайта. В настройках можно включить легкие анимации для карточек и кнопок
+- SoundCloud ReDesign (бета). Редизайн сайта под Material Design 3, круглые карточки и кнопки. Сыровато, но уже красиво
+- Расширения. В настройках можно выбрать папку с расширением из Chrome и оно подхватится
+- Блокировка рекламы. По умолчанию выключена, один переключатель. Окна входа и регистрации она не трогает
+- Горячие клавиши на numpad (1/2/3 треки, 4/5 громкость), все переназначается
+- 10 тем и 10 языков с автоопределением
+- Трей, автозапуск, боковая панель, громкость которая реально сохраняется
+- Настройки лежат локально в зашифрованном виде, только для твоего пользователя Windows
 
-## Build
+## Собрать самому
 
-VS2022 with ".NET desktop development", or the .NET SDK:
+Нужен VS2022 с ".NET desktop development" или просто .NET SDK:
 
 ```powershell
 dotnet build WpfApp1/WpfApp1.csproj -c Release
 ```
 
-For the single-file installer, zip the app output into the payload first, then build setup:
+Готовый exe будет в `WpfApp1/bin/Release/net48`.
 
-```powershell
-Compress-Archive WpfApp1/bin/Release/net48/* Setup/payload/app.zip -Force
-dotnet build Setup/Setup.csproj -c Release
-```
+## Пару заметок
 
-## Notes
-
-- The blocker is host/pattern based, not the full uBlock engine. Strict mode can break Google/Facebook login, so it's off by default.
-- Playback and login are SoundCloud's own site inside WebView2. If they change the player DOM, the injected buttons may need new selectors.
+- Плеер и вход это сам сайт SoundCloud внутри WebView2. Если они поменяют верстку, какие-то кнопки могут отвалиться, пиши в issues
+- Блокировщик простой, по хостам и паттернам, это не uBlock. Если что-то не грузится, выключи его
+- Папка данных лежит в `%LocalAppData%/SoundCloudDesktopBeta`, там же профиль браузера, поэтому логин и живет между запусками

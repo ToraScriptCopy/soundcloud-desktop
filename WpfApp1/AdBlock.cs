@@ -3,9 +3,11 @@ using System.IO;
 using Microsoft.Web.WebView2.Core;
 namespace WpfApp1
 {
+    // Single toggle blocker. Off by default. Never touches login and signup flows.
     public static class AdBlock
     {
-        public static bool Enabled = true;
+        public static bool Enabled = false;
+
         private static readonly string[] Hosts = new string[]
         {
             "doubleclick.net", "googlesyndication.com", "googleadservices.com",
@@ -51,14 +53,53 @@ namespace WpfApp1
             "adform", "sizmek", "flashtalking", "celtra", "mediamath",
             "quantserve", "triton", "podtrac", "chartable", "podsights"
         };
+        // Never block auth hosts. Login must always work.
+        private static readonly string[] AuthHosts = new string[]
+        {
+            "soundcloud.com", "api.soundcloud.com", "sndcdn.com",
+            "accounts.google.com", "apis.google.com", "ssl.gstatic.com",
+            "www.gstatic.com", "accounts.youtube.com",
+            "appleid.apple.com", "id.apple.com",
+            "auth0.com"
+        };
+        // Minimal cosmetic CSS. It hides only real ad slots and never
+        // touches login, signup, register or modal dialogs.
         public const string CosmeticCss =
-            "[class*='adSlot'],[class*='AdSlot'],[class*='sponsor'],[class*='Sponsor']," +
-            "[class*='promoted'],[class*='Promoted'],[id*='adSlot']," +
-            "[class*='upsell'],[class*='Upsell']," +
-            "[class*='premiumBanner']{display:none!important;}";
+            "[id*='adSlot']:not([class*='auth']):not([class*='login']):not([class*='signup']):not([class*='modal'])," +
+            "[class*='adSlot']:not([class*='auth']):not([class*='login']):not([class*='signup']):not([class*='modal'])," +
+            "[class*='AdSlot']:not([class*='auth']):not([class*='login']):not([class*='signup']):not([class*='modal'])" +
+            "{display:none!important;}";
+        public static bool IsAuthUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return false;
+            string low = url.ToLowerInvariant();
+            if (low.Contains("accounts.google.com") || low.Contains("apis.google.com")
+                || low.Contains("appleid.apple.com") || low.Contains("id.apple.com")
+                || low.Contains("/login") || low.Contains("/signin") || low.Contains("/signup")
+                || low.Contains("/register") || low.Contains("/oauth") || low.Contains("/auth")
+                || low.Contains("facebook.com/login") || low.Contains("facebook.com/dialog")
+                || low.Contains("soundcloud.com/signin") || low.Contains("soundcloud.com/signup"))
+                return true;
+            try
+            {
+                var u = new Uri(url);
+                string host = u.Host.ToLowerInvariant();
+                for (int i = 0; i < AuthHosts.Length; i++)
+                    if (host == AuthHosts[i] || host.EndsWith("." + AuthHosts[i]))
+                    {
+                        // soundcloud itself is never blocked, only third party ad hosts
+                        if (AuthHosts[i] == "soundcloud.com" || AuthHosts[i] == "api.soundcloud.com" || AuthHosts[i] == "sndcdn.com")
+                            return true;
+                        return true;
+                    }
+            }
+            catch { }
+            return false;
+        }
         public static bool ShouldBlock(string url)
         {
             if (!Enabled || string.IsNullOrEmpty(url)) return false;
+            if (IsAuthUrl(url)) return false;
             Uri u;
             try { u = new Uri(url); }
             catch { return false; }
@@ -73,15 +114,23 @@ namespace WpfApp1
         }
         public static void Attach(CoreWebView2 core)
         {
-            core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
-            core.WebResourceRequested += delegate(object sender, CoreWebView2WebResourceRequestedEventArgs e)
+            try
             {
-                if (ShouldBlock(e.Request.Uri))
+                core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                core.WebResourceRequested += delegate(object sender, CoreWebView2WebResourceRequestedEventArgs e)
                 {
-                    e.Response = core.Environment.CreateWebResourceResponse(
-                        new MemoryStream(new byte[0]), 200, "OK", "Content-Type: text/plain");
-                }
-            };
+                    try
+                    {
+                        if (ShouldBlock(e.Request.Uri))
+                        {
+                            e.Response = core.Environment.CreateWebResourceResponse(
+                                new MemoryStream(new byte[0]), 200, "OK", "Content-Type: text/plain");
+                        }
+                    }
+                    catch { }
+                };
+            }
+            catch { }
         }
     }
 }
