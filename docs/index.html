@@ -179,12 +179,12 @@
       <h2 data-i18n="plat_title">Platforms</h2>
       <table class="data">
         <thead><tr>
-          <th data-i18n="plat_build">Build</th><th>Windows x64</th><th>Windows x86</th><th>Linux x64</th>
+          <th data-i18n="plat_build">Build</th><th>Windows x64</th><th>Windows x86</th><th>Linux x64</th><th>macOS</th>
         </tr></thead>
         <tbody>
-          <tr><td>Classic (WPF)</td><td data-i18n="yes">Yes</td><td>No</td><td data-i18n="plat_no_wpf">No - WPF is Windows-only</td></tr>
-          <tr><td>Alternative UI (Electron)</td><td data-i18n="yes">Yes</td><td>No</td><td data-i18n="plat_tar">Yes, portable tar</td></tr>
-          <tr><td>Light (single file)</td><td data-i18n="plat_exe">Yes, single exe</td><td data-i18n="plat_exe">Yes, single exe</td><td data-i18n="plat_tar2">Yes, portable tar</td></tr>
+          <tr><td>Classic (WPF)</td><td data-i18n="yes">Yes</td><td>No</td><td data-i18n="plat_no_wpf">No - WPF is Windows-only</td><td data-i18n="plat_no_wpf">No - WPF is Windows-only</td></tr>
+          <tr><td>Alternative UI (Electron)</td><td data-i18n="yes">Yes</td><td>No</td><td data-i18n="plat_tar">Yes, portable tar</td><td data-i18n="plat_mac">Yes, app tar via CI</td></tr>
+          <tr><td>Light (single file)</td><td data-i18n="plat_exe">Yes, single exe</td><td data-i18n="plat_exe">Yes, single exe</td><td data-i18n="plat_tar2">Yes, portable tar</td><td data-i18n="plat_mac">Yes, app tar via CI</td></tr>
         </tbody>
       </table>
       <p class="muted" data-i18n="plat_note">Linux builds are produced automatically by CI on every release. Classic cannot come to Linux: WPF only exists on Windows.</p>
@@ -233,6 +233,22 @@
       <details class="faq">
         <summary data-i18n="faq4q">Something broke after a SoundCloud update?</summary>
         <p data-i18n="faq4a">Playback and login are the real site inside the app. If SoundCloud changes its layout, open an issue on GitHub.</p>
+      </details>
+      <details class="faq">
+        <summary data-i18n="faq5q">Is Alternative UI stable?</summary>
+        <p data-i18n="faq5a">Alt is the experimental playground: new features land there first, Classic stays the safe choice.</p>
+      </details>
+      <details class="faq">
+        <summary data-i18n="faq6q">Will my antivirus flag the downloads?</summary>
+        <p data-i18n="faq6a">Packed single-file apps sometimes trigger heuristic false positives. Compare the SHA-256 hash from the Safety section before running.</p>
+      </details>
+      <details class="faq">
+        <summary data-i18n="faq7q">How do updates work?</summary>
+        <p data-i18n="faq7a">Alt checks GitHub on launch. For Classic and Light, grab new files from the releases page.</p>
+      </details>
+      <details class="faq">
+        <summary data-i18n="faq8q">Why is there no installer?</summary>
+        <p data-i18n="faq8a">Portable apps leave no trace: unpack, run, delete the folder when done. Settings live in system files either way.</p>
       </details>
     </section>
   </main>

@@ -118,6 +118,8 @@ function Settings() {
             <Separator size="4" />
             <Row index={1} label="Start with Windows" checked={s.autostart} onChange={(v) => set({ autostart: v })} />
             <Separator size="4" />
+            <Row index={10} label="Pin to Start" checked={!!s.pinStart} onChange={(v) => api.cmd('pin-start', v).then((r) => set({ pinStart: !!r }))} />
+            <Separator size="4" />
             <Row index={2} label="Start minimized" checked={s.startMin} onChange={(v) => set({ startMin: v })} />
             <Separator size="4" />
             <Row index={3} label="Always on top" checked={s.alwaysOnTop} onChange={(v) => set({ alwaysOnTop: v })} />
@@ -248,7 +250,7 @@ function Settings() {
           </Flex>
         </Card>
 
-        <Text size="1" color="gray">SoundCloud Desktop Alt 3.2.0, experimental. Hotkeys: numpad 1/2/3 tracks, 4/5 volume.</Text>
+        <Text size="1" color="gray">SoundCloud Desktop Alt 3.3.0, experimental. Hotkeys: numpad 1/2/3 tracks, 4/5 volume.</Text>
         <Text size="1" color="gray">The extra features here were invented and written together with AI.</Text>
       </Flex>
     </Theme>

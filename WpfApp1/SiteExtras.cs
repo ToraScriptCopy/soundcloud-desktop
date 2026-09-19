@@ -107,8 +107,13 @@ namespace WpfApp1
             "header.header{background:#191919!important;border-bottom:1px solid #2a2a2a!important;box-shadow:0 1px 0 rgba(0,0,0,.4)!important}"
             + ".header__logo{background-size:contain!important}"
             + ".l-nav,.header__navMenuItem{transition:color .18s ease,box-shadow .18s ease!important}"
+            + "[role='tablist']{border-bottom:1px solid #2a2a2a!important}"
+            + "[role='tab']{border-radius:8px 8px 0 0!important;transition:box-shadow .18s ease,background-color .18s ease!important}"
+            + "[role='tab']:hover{background:#222222!important}"
+            + "[role='tab'][aria-selected='true']{box-shadow:inset 0 -2px 0 #f76b15!important}"
             + ".g-tabs-link.active,.header__navMenuItem.selected{box-shadow:inset 0 -2px 0 #f76b15!important}"
-            + ".profileTabs__link.active,.g-tabs-link.active{color:#eeeeee!important}";
+            + ".profileTabs__link.active,.g-tabs-link.active{color:#eeeeee!important}"
+            + ".profileTabs,.tabs,.g-tabs{border-bottom:1px solid #2a2a2a!important}";
 
         public const string RdCards =
             ".l-container,.l-fixed-top-one-column,.l-fullwidth{max-width:1280px!important}"
@@ -129,9 +134,9 @@ namespace WpfApp1
 
         public const string RdPlayer =
             ".playControls__bg,.playControls__inner{background:rgba(25,25,25,.94)!important;backdrop-filter:blur(16px)!important;border-top:1px solid #2a2a2a!important}"
-            + ".playControls__elements button,.playControls__inner button{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}"
+            + ".playControls__elements button,.playControls__inner button{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important;color:inherit!important}"
             + ".playControls__elements button:hover{border-color:#606060!important}"
-            + ".playControls__play{background:#f76b15!important;border-color:#f76b15!important;color:#fff!important}"
+            + ".playControls__play{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}"
             + ".playbackTimeline__progress,.playbackTimeline__progressWrapper .progress{background:#f76b15!important}"
             + ".playbackTimeline__timePassed,.playbackTimeline__duration{color:#b4b4b4!important}"
             + ".volume__sliderBackground,.volume__sliderWrapper{background:#3a3a3a!important;border-radius:99px!important}"
@@ -149,7 +154,8 @@ namespace WpfApp1
             + ".commentItem__timestamp,.commentItem time,.timeAgo{color:#7b7b7b!important}"
             + ".commentForm__input,.commentForm textarea{background:#222222!important;border:1px solid transparent!important;border-radius:8px!important;color:#eeeeee!important}"
             + ".commentForm__input:focus,.commentForm textarea:focus{border-color:#f76b15!important;box-shadow:0 0 0 1px #f76b15!important}"
-            + ".commentItem__replyButton{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}";
+            + ".commentItem__replyButton{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}"
+            + ".commentItem .commentItem,.comments__item .comments__item{margin-left:16px!important}";
 
         public const string RdSidebar =
             ".l-sidebar-right aside,.sidebar,.sideNav{background:transparent!important}"
@@ -157,6 +163,7 @@ namespace WpfApp1
             + ".sidebarHeader,.sidebarModule h3,.sidebarStats h3{color:#eeeeee!important}"
             + ".sidebarFooter,.footer,.l-footer{color:#7b7b7b!important}"
             + ".relatedTrack:hover,.sidebarTrack:hover{background:#222222!important;border-radius:8px!important}"
+            + ".sideNav a:hover,.sidebar a:hover{background:#222222!important;border-radius:8px!important}"
             + ".sc-ministats{color:#b4b4b4!important}";
 
         public const string RdInputs =
@@ -165,7 +172,8 @@ namespace WpfApp1
             + "input::placeholder,textarea::placeholder{color:#7b7b7b!important}"
             + "input:focus,textarea:focus,select:focus{border-color:#f76b15!important;box-shadow:0 0 0 1px #f76b15!important;outline:none!important}"
             + ".searchTitle{color:#eeeeee!important}"
-            + ".uploadForm input,.uploadForm textarea,.settingsForm input,.settingsForm textarea{border-radius:8px!important}";
+            + ".uploadForm input,.uploadForm textarea,.settingsForm input,.settingsForm textarea{border-radius:8px!important}"
+            + "::selection{background:#7e451d!important;color:#fff!important}";
 
         public const string RdPopups =
             ".modal__modal,.modal,.dialog{background:#222222!important;border:1px solid #2a2a2a!important;border-radius:12px!important;box-shadow:0 20px 60px rgba(0,0,0,.6)!important}"

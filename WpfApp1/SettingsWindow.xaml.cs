@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using UiControls = Wpf.Ui.Controls;
@@ -30,6 +31,8 @@ namespace WpfApp1
             TopmostSwitch.IsChecked = _state.Topmost;
             TrayHideSwitch.IsChecked = _state.TrayHide;
             AutostartSwitch.IsChecked = _state.Autostart;
+            try { PinStartSwitch.IsChecked = System.IO.File.Exists(StartMenuLink()); }
+            catch { PinStartSwitch.IsChecked = false; }
             AdBlockSwitch.IsChecked = _state.AdBlockOn;
             SiteAnimsSwitch.IsChecked = _state.SiteAnims;
             ReDesignSwitch.IsChecked = _state.ReDesign;
@@ -100,6 +103,7 @@ namespace WpfApp1
             TopmostSwitch.Content = Loc.Get("TopmostMain");
             TrayHideSwitch.Content = Loc.Get("TrayHide");
             AutostartSwitch.Content = Loc.Get("Autostart");
+            PinStartSwitch.Content = Loc.Get("PinStart");
             AdBlockSwitch.Content = Loc.Get("AdBlockLbl");
             SiteAnimsSwitch.Content = Loc.Get("SiteAnims");
             ReDesignSwitch.Content = Loc.Get("ReDesign");
@@ -161,6 +165,55 @@ namespace WpfApp1
             _state.Autostart = AutostartSwitch.IsChecked == true;
             _owner.ApplyAutostart();
             _owner.SaveAllState();
+        }
+        private static string StartMenuLink()
+        {
+            try
+            {
+                return System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+                    "Programs", "SoundCloud Desktop.lnk");
+            }
+            catch { return ""; }
+        }
+        private void PinStartSwitch_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_initialized) return;
+            try
+            {
+                string lnk = StartMenuLink();
+                if (lnk.Length == 0) return;
+                if (PinStartSwitch.IsChecked == true)
+                {
+                    string exe;
+                    try { exe = Process.GetCurrentProcess().MainModule.FileName; }
+                    catch { return; }
+                    try
+                    {
+                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(lnk));
+                        object shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
+                        object sc = shell.GetType().InvokeMember("CreateShortcut",
+                            System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { lnk });
+                        sc.GetType().InvokeMember("TargetPath",
+                            System.Reflection.BindingFlags.SetProperty, null, sc, new object[] { exe });
+                        sc.GetType().InvokeMember("WorkingDirectory",
+                            System.Reflection.BindingFlags.SetProperty, null, sc,
+                            new object[] { System.IO.Path.GetDirectoryName(exe) });
+                        sc.GetType().InvokeMember("IconLocation",
+                            System.Reflection.BindingFlags.SetProperty, null, sc, new object[] { exe + ",0" });
+                        sc.GetType().InvokeMember("Save",
+                            System.Reflection.BindingFlags.InvokeMethod, null, sc, null);
+                    }
+                    catch { }
+                }
+                else
+                {
+                    try { if (System.IO.File.Exists(lnk)) System.IO.File.Delete(lnk); }
+                    catch { }
+                }
+                PinStartSwitch.IsChecked = System.IO.File.Exists(lnk);
+            }
+            catch { }
         }
         private void AdBlockSwitch_Changed(object sender, RoutedEventArgs e)
         {

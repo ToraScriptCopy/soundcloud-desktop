@@ -47,8 +47,11 @@ namespace WpfApp1
             + "if(!b)return 'no-btn';b.click();return 'ok';})()";
         private const string JsPoll =
             "(function(){var t=0,d=0,playing=false,title='',art='',artist='';"
-            + "try{var a=document.querySelector('audio');"
-            + "if(a){t=Math.floor(a.currentTime||0);d=Math.floor(a.duration||0);playing=!a.paused;}}catch(e){}"
+            + "try{var list=document.querySelectorAll('audio');"
+            + "for(var i=0;i<list.length;i++){var m=list[i];"
+            + "var dd=Math.floor(m.duration||0);"
+            + "if(dd>d){d=dd;t=Math.floor(m.currentTime||0);}"
+            + "if(!m.paused&&!m.ended&&m.currentTime>0)playing=true;}}catch(e){}"
             + "try{title=document.title||'';}catch(e){}"
             + "try{var ti=document.querySelector('.playbackSoundBadge__titleLink');"
             + "if(ti&&(ti.title||ti.textContent))title=ti.title||ti.textContent;}catch(e){}"
@@ -66,6 +69,10 @@ namespace WpfApp1
         private bool _hasTitle;
         private bool _wasPlaying;
         private string _lastTrackKey = "";
+        private string _lpTitle = "";
+        private string _lpArtist = "";
+        private string _lpArt = "";
+        private string _lpTime = "";
         private double _lastSentVol = -1;
         private bool _lastSentMute;
         private AppState _state;
@@ -696,9 +703,14 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
                         _hasTitle = true;
                         string time = FmtTime(p[0]) + " / " + FmtTime(p[1]);
                         NowPlaying.Text = (p[1] != "0" && p[1].Length > 0 ? time + "  -  " : "") + title;
+                        _lpTitle = title;
+                        _lpArtist = artist;
+                        _lpArt = art;
+                        _lpTime = time;
                     }
                     string key = title + "||" + artist;
-                    if (playing && _state.PlayerPopup && (!_wasPlaying || key != _lastTrackKey))
+                    if (playing && !string.IsNullOrWhiteSpace(title) && title != "null"
+                        && _state.PlayerPopup && (!_wasPlaying || key != _lastTrackKey))
                         ShowPlayerWindow(title, artist, art, FmtTime(p[0]) + " / " + FmtTime(p[1]), true);
                     else if (_player != null && _player.IsVisible)
                         _player.UpdateInfo(title, artist, art, FmtTime(p[0]) + " / " + FmtTime(p[1]), playing);
@@ -724,6 +736,17 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
                 _player.UpdateInfo(title, artist, art, time, playing);
                 if (!_player.IsVisible) _player.Show();
                 else if (_player.WindowState == WindowState.Minimized) _player.WindowState = WindowState.Normal;
+                try { _player.Activate(); }
+                catch { }
+            }
+            catch { }
+        }
+        private void NowPlaying_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_lpTitle)) return;
+                ShowPlayerWindow(_lpTitle, _lpArtist, _lpArt, _lpTime, _wasPlaying);
             }
             catch { }
         }

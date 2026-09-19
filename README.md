@@ -21,13 +21,13 @@
 
 Grab the latest release on the [Releases page](https://github.com/ToraScriptCopy/soundcloud-desktop/releases). Everything is portable: unpack and run, no install, no admin rights.
 
-| Build | Windows x64 | Windows x86 | Linux x64 | Size |
-|---|---|---|---|---|
-| **Classic** (WPF) | `...-Portable-vX.zip` | - | - | ~3 MB |
-| **Alternative UI** (Electron + Radix, experimental) | `...-AlternativeUI-vX.zip` | - | `...-Linux-AlternativeUI-vX.tar.gz` | ~160 MB |
-| **Light** (single file) | `SoundCloudLight.exe` | `SoundCloudLight-x86.exe` | `SoundCloudLight-Linux-vX.tar.gz` | ~100 MB |
+| Build | Windows x64 | Windows x86 | Linux x64 | macOS | Size |
+|---|---|---|---|---|---|
+| **Classic** (WPF) | `...-Portable-vX.zip` | - | - | - | ~3 MB |
+| **Alternative UI** (Electron + Radix, experimental) | `...-AlternativeUI-vX.zip` | - | `...-Linux-AlternativeUI-vX.tar.gz` | `...-Mac-AlternativeUI-{arch}-vX.tar.gz` | ~160 MB |
+| **Light** (single file) | `SoundCloudLight.exe` | `SoundCloudLight-x86.exe` | `SoundCloudLight-Linux-vX.tar.gz` | `SoundCloudLight-Mac-{arch}-vX.tar.gz` | ~100 MB |
 
-The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. Light installs it for you when it is missing. Alt needs nothing extra on Windows. On Linux, Alt needs basic desktop libs (`libnss3`, `libatk`, `libcups`), Light needs WebKitGTK (`libwebkit2gtk-4.1-0`).
+The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. Light installs it for you when it is missing. Alt needs nothing extra on Windows. On Linux, Alt needs basic desktop libs (`libnss3`, `libatk`, `libcups`), Light needs WebKitGTK (`libwebkit2gtk-4.1-0`). Mac builds are unsigned, right-click the app and choose Open on first launch.
 
 - **Classic (WPF)** - the main build. Fluent shell, Now playing popup, PiP player, hotkeys, extensions, 14 themes, encrypted local settings.
 - **Alternative UI** - the experimental playground. Real Radix Themes interface with a full shell (navigation, sidebar, bottom bar) plus 20 extra desktop features. Bigger download, needs no WebView2.
@@ -89,40 +89,87 @@ Real windows captured from running builds.
 
 ## Platforms
 
-| Build | Windows x64 | Windows x86 | Linux x64 |
-|---|---|---|---|
-| Classic (WPF) | Yes | No | No, WPF is Windows-only |
-| Alternative UI | Yes | No | Yes, portable tar |
-| Light | Yes, single exe | Yes, single exe | Yes, portable tar |
+| Build | Windows x64 | Windows x86 | Linux x64 | macOS x64 and arm64 |
+|---|---|---|---|---|
+| Classic (WPF) | Yes | No | No, WPF is Windows-only | No, WPF is Windows-only |
+| Alternative UI | Yes | No | Yes, portable tar | Yes, app tar via CI |
+| Light | Yes, single exe | Yes, single exe | Yes, portable tar | Yes, binary tar via CI |
 
-Linux builds are produced automatically by CI on every release. Classic cannot come to Linux: WPF only exists on Windows.
-
-## Build
-
-You need the .NET SDK for Classic, Node 24 for Alternative UI, Python 3.10 for Light.
-
-```powershell
-# Classic (Windows only)
-dotnet build WpfApp1/WpfApp1.csproj -c Release
-# -> WpfApp1/bin/Release/net48/SoundCloudDesk.exe
-
-# Alternative UI shell
-cd AltElectron
-npm install
-npm run ui:build
-npm run pkg:portable
-# -> AltElectron/portable/SoundCloudDeskAlt/
-
-# Light, 64 bit
-cd Light
-pip install pywebview pyinstaller
-pyinstaller --onefile --noconsole --icon ul-icon.ico --name SoundCloudLight app.py
-# -> Light/dist/SoundCloudLight.exe
-```
+Linux and Mac builds are produced automatically by CI on every release. Classic cannot leave Windows: WPF only exists there. Mac builds are unsigned, right-click the app and choose Open on first launch.
 
 ## Source map
 
-Every file and what it is responsible for.
+How the program works, file by file.
+
+```mermaid
+flowchart TB
+    U(["User"]) --> CW["Classic window"]
+    U --> AW["Alt shell"]
+    U --> LW["Light window"]
+    SC["soundcloud.com"]
+
+    subgraph Classic ["Classic — WPF on .NET Framework"]
+        direction TB
+        MW["MainWindow\nshell plus browser plus poll loop\nvolume, hotkeys, tray, player"]
+        AD["AdBlock\nhost and pattern filter\nplus auth allowlist"]
+        SE["SiteExtras\n8 CSS flags plus promo killer\nplus animations"]
+        SS["SecureStore\nencrypted vault\nplus test profile override"]
+        SW["SettingsWindow\ntoggles, hotkeys, extensions\nplus pin to Start"]
+        RW["RedesignWindow\n8 live flags"]
+        PW["PlayerWindow\nNow playing popup"]
+        PI["PipWindow\nembed widget"]
+        AU["AuthWindow\nOAuth popup"]
+        ST["Strings\n10 languages"]
+        TH["Themes\n14 themes"]
+        FX["Fx\nshell animations"]
+        MW --> AB
+        MW --> SE
+        MW --> SS
+        MW --> SW
+        MW --> PW
+        MW --> PI
+        MW --> AU
+        SW --> RW
+        SW --> ST
+        SW --> TH
+    end
+
+    subgraph Alt ["Alternative UI — Electron plus Radix, experimental"]
+        direction TB
+        MJ["electron/main.js\nwindows, tray, IPC\nshortcuts, updates, stats"]
+        PR["preload-shell.js\nsecure window.api bridge"]
+        SH["shell.jsx\nnav plus sidebar plus bottom bar\nplus recent and links"]
+        PL["player.jsx\ntransport plus speed\nplus repeat and mini"]
+        ST2["settings.jsx\nshell themes plus flags\nplus tools"]
+        MJ --> SH
+        MJ --> PL
+        MJ --> ST2
+        SH --> PR
+        PL --> PR
+        ST2 --> PR
+    end
+
+    subgraph Light ["Light — Python plus pywebview"]
+        direction TB
+        AP["app.py\nwindow plus system profile\nplus WebView2 auto install"]
+    end
+
+    subgraph Web ["Website and CI"]
+        direction TB
+        DOCS["docs/\nlanding plus releases\nplus source browser"]
+        CI["linux.yml\nLinux and Mac builds"]
+    end
+
+    CW --> MW
+    AW --> MJ
+    LW --> AP
+    MW -.->|"injects CSS and JS"| SC
+    MJ -.->|"injects CSS and JS"| SC
+    LW -.->|"plain view"| SC
+    SS --> VAULT[("vault.dat<br/>encrypted settings")]
+    MJ --> STORE[("settings.json<br/>plain prefs")]
+    CI -.->|"attaches tars"| REL[("GitHub Release")]
+```
 
 **WpfApp1/ - the Classic build (C#, WPF, .NET Framework 4.8)**
 

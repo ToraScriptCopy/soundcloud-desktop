@@ -126,7 +126,9 @@
                                      Checked="MuteSwitch_Changed" Unchecked="MuteSwitch_Changed"/>
                 </StackPanel>
                 <TextBlock x:Name="NowPlaying" VerticalAlignment="Center" FontSize="12"
-                           TextTrimming="CharacterEllipsis" Margin="0,0,10,0"/>
+                           TextTrimming="CharacterEllipsis" Margin="0,0,10,0"
+                           Cursor="Hand" ToolTip="Show player"
+                           MouseLeftButtonDown="NowPlaying_Click"/>
             </DockPanel>
         </Border>
 

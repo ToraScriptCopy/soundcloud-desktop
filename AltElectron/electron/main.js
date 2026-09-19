@@ -6,7 +6,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session
 const path = require('path');
 const fs = require('fs');
 
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.3.0';
 const HOME_URL = 'https://soundcloud.com/';
 const TOP_H = 52, BOTTOM_H = 46, SIDE_W = 210;
 
@@ -54,8 +54,11 @@ let memSec = 0;
 
 /* ---------------- site scripts (mirror of the WPF build) ---------------- */
 const POLL_JS = `(function(){var t=0,d=0,playing=false,title='',art='',artist='';
-try{var a=document.querySelector('audio');
-if(a){t=Math.floor(a.currentTime||0);d=Math.floor(a.duration||0);playing=!a.paused;}}catch(e){}
+try{var list=document.querySelectorAll('audio');
+for(var i=0;i<list.length;i++){var m=list[i];
+var dd=Math.floor(m.duration||0);
+if(dd>d){d=dd;t=Math.floor(m.currentTime||0);}
+if(!m.paused&&!m.ended&&m.currentTime>0)playing=true;}}catch(e){}
 try{title=document.title||'';}catch(e){}
 try{var ti=document.querySelector('.playbackSoundBadge__titleLink');
 if(ti&&(ti.title||ti.textContent))title=ti.title||ti.textContent;}catch(e){}
@@ -168,7 +171,12 @@ const RD = {
     + '.header__logo{background-size:contain!important}'
     + '.l-nav,.header__navMenuItem{transition:color .18s ease,box-shadow .18s ease!important}'
     + '.g-tabs-link.active,.header__navMenuItem.selected{box-shadow:inset 0 -2px 0 #f76b15!important}'
-    + '.profileTabs__link.active,.g-tabs-link.active{color:#eeeeee!important}',
+    + '.profileTabs__link.active,.g-tabs-link.active{color:#eeeeee!important}'
+    + "[role='tablist']{border-bottom:1px solid #2a2a2a!important}"
+    + "[role='tab']{border-radius:8px 8px 0 0!important;transition:box-shadow .18s ease,background-color .18s ease!important}"
+    + "[role='tab']:hover{background:#222222!important}"
+    + "[role='tab'][aria-selected='true']{box-shadow:inset 0 -2px 0 #f76b15!important}"
+    + '.profileTabs,.tabs,.g-tabs{border-bottom:1px solid #2a2a2a!important}',
   rdCards:
     '.l-container,.l-fixed-top-one-column,.l-fullwidth{max-width:1280px!important}'
     + '.soundList__item,.trackItem,.searchItem,.chartTrack,.sound__content{background:#191919!important;border:1px solid #2a2a2a!important;border-radius:12px!important;padding:12px!important;margin-bottom:10px!important}'
@@ -186,9 +194,9 @@ const RD = {
     + '.sc-button-like.liked,.sc-button-repost.reposted{color:#f76b15!important;border-color:#7e451d!important}',
   rdPlayer:
     '.playControls__bg,.playControls__inner{background:rgba(25,25,25,.94)!important;backdrop-filter:blur(16px)!important;border-top:1px solid #2a2a2a!important}'
-    + '.playControls__elements button,.playControls__inner button{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}'
+    + '.playControls__elements button,.playControls__inner button{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important;color:inherit!important}'
     + '.playControls__elements button:hover{border-color:#606060!important}'
-    + '.playControls__play{background:#f76b15!important;border-color:#f76b15!important;color:#fff!important}'
+    + '.playControls__play{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}'
     + '.playbackTimeline__progress,.playbackTimeline__progressWrapper .progress{background:#f76b15!important}'
     + '.playbackTimeline__timePassed,.playbackTimeline__duration{color:#b4b4b4!important}'
     + '.volume__sliderBackground,.volume__sliderWrapper{background:#3a3a3a!important;border-radius:99px!important}'
@@ -205,13 +213,15 @@ const RD = {
     + '.commentItem__timestamp,.commentItem time,.timeAgo{color:#7b7b7b!important}'
     + '.commentForm__input,.commentForm textarea{background:#222222!important;border:1px solid transparent!important;border-radius:8px!important;color:#eeeeee!important}'
     + '.commentForm__input:focus,.commentForm textarea:focus{border-color:#f76b15!important;box-shadow:0 0 0 1px #f76b15!important}'
-    + '.commentItem__replyButton{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}',
+    + '.commentItem__replyButton{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}'
+    + '.commentItem .commentItem,.comments__item .comments__item{margin-left:16px!important}',
   rdSidebar:
     '.l-sidebar-right aside,.sidebar,.sideNav{background:transparent!important}'
     + '.sidebarModule,.sidebarStats,.relatedTracks,.whoToFollow{background:#191919!important;border:1px solid #2a2a2a!important;border-radius:12px!important;padding:12px!important;margin-bottom:12px!important}'
     + '.sidebarHeader,.sidebarModule h3,.sidebarStats h3{color:#eeeeee!important}'
     + '.sidebarFooter,.footer,.l-footer{color:#7b7b7b!important}'
     + '.relatedTrack:hover,.sidebarTrack:hover{background:#222222!important;border-radius:8px!important}'
+    + '.sideNav a:hover,.sidebar a:hover{background:#222222!important;border-radius:8px!important}'
     + '.sc-ministats{color:#b4b4b4!important}',
   rdInputs:
     'input[type=text],input[type=search],input[type=email],input[type=password],.headerSearch__input{background:#222222!important;border:1px solid transparent!important;border-radius:999px!important;color:#eeeeee!important}'
@@ -219,7 +229,8 @@ const RD = {
     + 'input::placeholder,textarea::placeholder{color:#7b7b7b!important}'
     + 'input:focus,textarea:focus,select:focus{border-color:#f76b15!important;box-shadow:0 0 0 1px #f76b15!important;outline:none!important}'
     + '.searchTitle{color:#eeeeee!important}'
-    + '.uploadForm input,.uploadForm textarea,.settingsForm input,.settingsForm textarea{border-radius:8px!important}',
+    + '.uploadForm input,.uploadForm textarea,.settingsForm input,.settingsForm textarea{border-radius:8px!important}'
+    + '::selection{background:#7e451d!important;color:#fff!important}',
   rdPopups:
     '.modal__modal,.modal,.dialog{background:#222222!important;border:1px solid #2a2a2a!important;border-radius:12px!important;box-shadow:0 20px 60px rgba(0,0,0,.6)!important}'
     + '.modal__title,.dialog h2,.modal h2{color:#eeeeee!important}'
@@ -361,9 +372,20 @@ function createMain() {
   layoutSiteView();
   siteView.webContents.loadURL(store.lastUrl || HOME_URL);
 
+  // Login popups (Google, Facebook, Apple) open as real popup windows with
+  // the opener link intact, so OAuth can talk back to the site.
+  // Nothing is injected into them: no restyle, no scripts, no blocking.
   siteView.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('http://') || url.startsWith('https://')) openAuth(url);
-    return { action: 'deny' };
+    if (!url.startsWith('http://') && !url.startsWith('https://')) return { action: 'deny' };
+    return {
+      action: 'allow',
+      overrideBrowserWindowOptions: {
+        width: 500, height: 680, title: 'Sign in',
+        autoHideMenuBar: true,
+        icon: asset('icon.ico'),
+        webPreferences: { partition: PARTITION },
+      },
+    };
   });
 
   siteView.webContents.on('did-finish-load', () => { injectSite(); applyVolume(); sendNavState(); });
@@ -419,20 +441,6 @@ function openPip(pageUrl) {
     w.on('closed', () => { pipWins = pipWins.filter((x) => x !== w); });
     pipWins.push(w);
   } catch (e) { logLine('pip failed: ' + e.message); }
-}
-
-function openAuth(url) {
-  const w = new BrowserWindow({
-    width: 480, height: 640, title: 'SoundCloud',
-    autoHideMenuBar: true, parent: mainWin || undefined,
-    icon: asset('icon.ico'),
-    webPreferences: { partition: PARTITION },
-  });
-  w.loadURL(url);
-  w.webContents.on('page-title-updated', (_e, title) => { if (title) w.setTitle(title); });
-  w.webContents.on('did-finish-load', () => {
-    w.webContents.executeJavaScript(PROMO_JS).catch(() => {});
-  });
 }
 
 function createPlayer() {
@@ -747,6 +755,22 @@ ipcMain.handle('shell-cmd', async (e, name, arg) => {
     store.recent = []; saveStore(); pushStore();
     try { app.setJumpList([]); } catch (err) { /* ignore */ }
     return true;
+  }
+  if (name === 'pin-start') {
+    try {
+      const dir = path.join(app.getPath('appData'), 'Microsoft', 'Windows', 'Start Menu', 'Programs');
+      const file = path.join(dir, 'SoundCloud Desktop Alt.url');
+      if (arg) {
+        fs.mkdirSync(dir, { recursive: true });
+        const target = 'file:///' + process.execPath.replace(/\\/g, '/');
+        fs.writeFileSync(file, '[InternetShortcut]\r\nURL=' + target + '\r\nIconFile=' + process.execPath + '\r\nIconIndex=0\r\n');
+      } else if (fs.existsSync(file)) {
+        fs.rmSync(file, { force: true });
+      }
+      store.pinStart = fs.existsSync(file);
+      saveStore(); pushStore();
+      return store.pinStart;
+    } catch (e) { return !!store.pinStart; }
   }
   if (name === 'ext-add') {
     const r = await dialog.showOpenDialog({ properties: ['openDirectory'] });

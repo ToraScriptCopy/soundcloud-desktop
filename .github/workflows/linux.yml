@@ -1,4 +1,4 @@
-name: linux-builds
+name: unix-builds
 
 on:
   release:
@@ -70,3 +70,67 @@ jobs:
         with:
           tag_name: ${{ env.TAG }}
           files: SoundCloudLight-Linux-${{ env.TAG }}.tar.gz
+
+  alt-mac:
+    strategy:
+      matrix:
+        include:
+          - runner: macos-13
+            arch: x64
+          - runner: macos-14
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    env:
+      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install deps
+        working-directory: AltElectron
+        run: npm ci --no-audit --no-fund
+      - name: Build UI
+        working-directory: AltElectron
+        run: npm run ui:build
+      - name: Pack app bundle
+        working-directory: AltElectron
+        run: npm run pkg:portable
+      - name: Archive
+        run: tar czf SoundCloudDesktopBeta-Mac-AlternativeUI-${{ matrix.arch }}-${{ env.TAG }}.tar.gz -C AltElectron/portable SoundCloudDeskAlt
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: SoundCloudDesktopBeta-Mac-AlternativeUI-${{ matrix.arch }}-${{ env.TAG }}.tar.gz
+
+  ultra-mac:
+    strategy:
+      matrix:
+        include:
+          - runner: macos-13
+            arch: x64
+          - runner: macos-14
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    env:
+      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pywebview pyinstaller
+      - name: Build single file
+        working-directory: Light
+        run: pyinstaller --onefile --noconsole --name SoundCloudLightMac app.py
+      - name: Archive
+        run: tar czf SoundCloudLight-Mac-${{ matrix.arch }}-${{ env.TAG }}.tar.gz -C Light/dist SoundCloudLightMac
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: SoundCloudLight-Mac-${{ matrix.arch }}-${{ env.TAG }}.tar.gz

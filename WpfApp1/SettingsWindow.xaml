@@ -36,6 +36,8 @@
                                  Checked="TrayHideSwitch_Changed" Unchecked="TrayHideSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="AutostartSwitch" Margin="0,6,0,0"
                                  Checked="AutostartSwitch_Changed" Unchecked="AutostartSwitch_Changed"/>
+                <ui:ToggleSwitch x:Name="PinStartSwitch" Margin="0,6,0,0"
+                                 Checked="PinStartSwitch_Changed" Unchecked="PinStartSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="AdBlockSwitch" Margin="0,6,0,0"
                                  Checked="AdBlockSwitch_Changed" Unchecked="AdBlockSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="SiteAnimsSwitch" Margin="0,6,0,0"

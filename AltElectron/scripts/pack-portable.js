@@ -36,6 +36,46 @@ for (const n of ['default_app.asar']) {
 }
 // 3. Rename launcher. Detect the TARGET platform from the dist contents,
 // not from the build machine, so cross-packing works.
+const APP_NAME = 'SoundCloudDeskAlt';
+if (fs.existsSync(path.join(out, 'Electron.app'))) {
+  // macOS bundle layout.
+  const appBundle = path.join(out, APP_NAME + '.app');
+  fs.renameSync(path.join(out, 'Electron.app'), appBundle);
+  const contents = path.join(appBundle, 'Contents');
+  const resDir = path.join(contents, 'Resources');
+  const macDir = path.join(contents, 'MacOS');
+  const appRes = path.join(resDir, 'app');
+  const defaultAsar = path.join(resDir, 'default_app.asar');
+  if (fs.existsSync(defaultAsar)) fs.rmSync(defaultAsar, { force: true });
+  if (fs.existsSync(appRes)) fs.rmSync(appRes, { recursive: true, force: true });
+  fs.mkdirSync(appRes, { recursive: true });
+  fs.copyFileSync(path.join(root, 'package.json'), path.join(appRes, 'package.json'));
+  copyDir(path.join(root, 'electron'), path.join(appRes, 'electron'));
+  copyDir(path.join(root, 'dist'), path.join(appRes, 'dist'));
+  copyDir(path.join(root, 'assets'), path.join(appRes, 'assets'));
+  // Patch bundle identity.
+  const plistPath = path.join(contents, 'Info.plist');
+  try {
+    let plist = fs.readFileSync(plistPath, 'utf8');
+    plist = plist
+      .replace(/<key>CFBundleExecutable<\/key>\s*<string>[^<]*<\/string>/, '<key>CFBundleExecutable</key><string>' + APP_NAME + '</string>')
+      .replace(/<key>CFBundleName<\/key>\s*<string>[^<]*<\/string>/, '<key>CFBundleName</key><string>SoundCloud Desktop Alt</string>')
+      .replace(/<key>CFBundleIdentifier<\/key>\s*<string>[^<]*<\/string>/, '<key>CFBundleIdentifier</key><string>com.torascript.soundcloud-alt</string>');
+    fs.writeFileSync(plistPath, plist);
+  } catch (e) { console.error('Info.plist patch failed: ' + e.message); }
+  const srcBin = path.join(macDir, 'Electron');
+  const dstBin = path.join(macDir, APP_NAME);
+  if (fs.existsSync(srcBin)) fs.renameSync(srcBin, dstBin);
+  try { fs.chmodSync(dstBin, 0o755); } catch (e) { /* ignore */ }
+  // Ad-hoc sign when possible (works on macOS runners, skipped elsewhere).
+  try {
+    const { spawnSync } = require('child_process');
+    const r = spawnSync('codesign', ['--force', '--deep', '--sign', '-', appBundle], { stdio: 'pipe' });
+    if (r.status === 0) console.log('ad-hoc signed');
+    else console.log('codesign skipped (not on macOS)');
+  } catch (e) { console.log('codesign skipped (not on macOS)'); }
+  console.log('portable ready: ' + appBundle);
+} else {
 const hasWinExe = fs.existsSync(path.join(out, 'electron.exe'));
 const isWinTarget = hasWinExe;
 const srcExe = path.join(out, isWinTarget ? 'electron.exe' : 'electron');
@@ -50,3 +90,4 @@ copyDir(path.join(root, 'dist'), path.join(appOut, 'dist'));
 copyDir(path.join(root, 'assets'), path.join(appOut, 'assets'));
 
 console.log('portable ready: ' + out);
+}

@@ -1,6 +1,6 @@
 {
   "name": "soundcloud-desktop-alt",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "SoundCloud Desktop Alt - unofficial client shell on Electron with a real Radix Themes UI",
   "main": "electron/main.js",
   "scripts": {
