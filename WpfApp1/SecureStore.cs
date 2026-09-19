@@ -20,7 +20,7 @@ namespace WpfApp1
         [DataMember] public bool SidebarOpen { get; set; }
         [DataMember] public bool Topmost { get; set; }
         [DataMember] public bool TrayHide { get; set; }
-        [DataMember] public bool? PlayAfterClose { get; set; }
+        [DataMember] public bool PlayAfterClose { get; set; }
         [DataMember] public bool Autostart { get; set; }
         [DataMember] public bool AdBlockOn { get; set; }
         [DataMember] public bool SiteAnims { get; set; }
@@ -51,7 +51,8 @@ namespace WpfApp1
             HideHeader = true;
             SidebarOpen = true;
             Topmost = false;
-            TrayHide = true;
+            TrayHide = false;
+            PlayAfterClose = false;
             Autostart = false;
             AdBlockOn = false;
             SiteAnims = false;

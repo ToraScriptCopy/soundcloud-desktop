@@ -97,8 +97,8 @@ def main():
         width=1180, height=760, min_size=(860, 560),
     )
 
-    def slim_scrollbars():
-        # Barely visible scrollbars, nothing else. 15% thumb, transparent track.
+    def slim_chrome():
+        # Barely visible scrollbars plus a quiet volume slider. Nothing else.
         try:
             win.evaluate_js(
                 "(function(){var s=document.getElementById('__scLite');"
@@ -111,12 +111,15 @@ def main():
                 "!important;border-radius:99px!important;border:none!important}"
                 "::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.35)"
                 "!important}::-webkit-scrollbar-track{background:transparent"
-                "!important}';})()")
+                "!important}.volume__sliderBackground,.volume__sliderWrapper{"
+                "background:rgba(255,255,255,.12)!important;border-radius:99px"
+                "!important}.volume__sliderWrapper{opacity:.5!important}"
+                ".volume__sliderWrapper:hover{opacity:1!important}';})()")
         except Exception:
             pass
 
     try:
-        win.events.loaded += slim_scrollbars
+        win.events.loaded += slim_chrome
     except Exception:
         pass
     try:

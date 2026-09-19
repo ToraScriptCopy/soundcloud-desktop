@@ -93,6 +93,9 @@ namespace WpfApp1
             InitializeComponent();
             bool tampered;
             _state = SecureStore.Load(out tampered);
+            // Old vaults only knew TrayHide: carry it over once, then it is gone.
+            try { if (!_state.PlayAfterClose && _state.TrayHide) _state.PlayAfterClose = true; }
+            catch { }
             try
             {
                 foreach (string a in Environment.GetCommandLineArgs())
@@ -226,8 +229,8 @@ namespace WpfApp1
         private bool _allowExit;
         public bool KeepPlaying()
         {
-            try { return _state == null || _state.PlayAfterClose != false; }
-            catch { return true; }
+            try { return _state != null && _state.PlayAfterClose; }
+            catch { return false; }
         }
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
@@ -402,6 +405,7 @@ namespace WpfApp1
                 AdBlock.Attach(Browser.CoreWebView2);
                 Browser.CoreWebView2.NavigationStarting += Browser_NavigationStarting;
                 Browser.CoreWebView2.NewWindowRequested += Browser_NewWindowRequested;
+                Browser.CoreWebView2.ContentLoading += Browser_ContentLoading;
                 Browser.SourceChanged += Browser_SourceChanged;
                 Browser.NavigationCompleted += Browser_NavigationCompleted;
                 await LoadExtensionsAsync();
@@ -490,6 +494,13 @@ namespace WpfApp1
             if (!_initialized || Browser.Source == null) return;
             AddrBox.Text = Browser.Source.ToString();
             UpdateNavButtons();
+        }
+        private void Browser_ContentLoading(object sender, CoreWebView2ContentLoadingEventArgs e)
+        {
+            // Runs before first paint: styles land with the page, no unstyled flash.
+            if (!_initialized) return;
+            FireJs(SiteCssJs());
+            FireJs(SiteExtras.PromoJs);
         }
         private async void Browser_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
@@ -833,7 +844,7 @@ return n+'|'+r1+'|'+cur;})(" + v.ToString(CultureInfo.InvariantCulture) + ")";
             if (Browser == null) return;
             if (WindowState == WindowState.Minimized)
             {
-                if (_state != null && _state.TrayHide)
+                if (_state != null && _state.PlayAfterClose)
                 {
                     Hide();
                     return;

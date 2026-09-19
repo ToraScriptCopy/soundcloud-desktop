@@ -29,9 +29,8 @@ namespace WpfApp1
             ThemeBox.SelectedIndex = _state.Theme >= 0 && _state.Theme < Themes.Count ? _state.Theme : 0;
             HideHeaderSwitch2.IsChecked = _state.HideHeader;
             TopmostSwitch.IsChecked = _state.Topmost;
-            TrayHideSwitch.IsChecked = _state.TrayHide;
-            try { PlayAfterCloseSwitch.IsChecked = _state.PlayAfterClose != false; }
-            catch { PlayAfterCloseSwitch.IsChecked = true; }
+            try { PlayAfterCloseSwitch.IsChecked = _state.PlayAfterClose == true; }
+            catch { PlayAfterCloseSwitch.IsChecked = false; }
             AutostartSwitch.IsChecked = _state.Autostart;
             try { PinStartSwitch.IsChecked = System.IO.File.Exists(StartMenuLink()); }
             catch { PinStartSwitch.IsChecked = false; }
@@ -103,7 +102,6 @@ namespace WpfApp1
             ThemeLabel2.Text = Loc.Get("ThemeLabel");
             HideHeaderSwitch2.Content = Loc.Get("HideHeader");
             TopmostSwitch.Content = Loc.Get("TopmostMain");
-            TrayHideSwitch.Content = Loc.Get("TrayHide");
             PlayAfterCloseSwitch.Content = Loc.Get("PlayAfterClose");
             AutostartSwitch.Content = Loc.Get("Autostart");
             PinStartSwitch.Content = Loc.Get("PinStart");
@@ -156,16 +154,10 @@ namespace WpfApp1
             _owner.Topmost = _state.Topmost;
             _owner.SaveAllState();
         }
-        private void TrayHideSwitch_Changed(object sender, RoutedEventArgs e)
-        {
-            if (!_initialized) return;
-            _state.TrayHide = TrayHideSwitch.IsChecked == true;
-            _owner.SaveAllState();
-        }
         private void PlayAfterCloseSwitch_Changed(object sender, RoutedEventArgs e)
         {
             if (!_initialized) return;
-            _state.PlayAfterClose = PlayAfterCloseSwitch.IsChecked != false;
+            _state.PlayAfterClose = PlayAfterCloseSwitch.IsChecked == true;
             _owner.SaveAllState();
         }
         private void AutostartSwitch_Changed(object sender, RoutedEventArgs e)

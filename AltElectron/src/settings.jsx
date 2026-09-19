@@ -113,11 +113,8 @@ function Settings() {
 
         <Card>
           <Flex direction="column">
-            <Row index={0} label="Minimize to tray" hint="Closing the window keeps music playing"
-              checked={s.trayHide} onChange={(v) => set({ trayHide: v })} />
-            <Separator size="4" />
-            <Row index={11} label="Keep playing after closing" hint="Close hides to tray, music continues"
-              checked={s.playAfterClose !== false} onChange={(v) => set({ playAfterClose: v })} />
+            <Row index={0} label="Keep playing after closing" hint="Close and minimize go to tray, music continues"
+              checked={!!s.playAfterClose} onChange={(v) => set({ playAfterClose: v })} />
             <Separator size="4" />
             <Row index={1} label="Start with Windows" checked={s.autostart} onChange={(v) => set({ autostart: v })} />
             <Separator size="4" />
@@ -253,7 +250,7 @@ function Settings() {
           </Flex>
         </Card>
 
-        <Text size="1" color="gray">SoundCloud Desktop Alt 3.4.0, experimental. Hotkeys: numpad 1/2/3 tracks, 4/5 volume.</Text>
+        <Text size="1" color="gray">SoundCloud Desktop Alt 3.5.0, experimental. Hotkeys: numpad 1/2/3 tracks, 4/5 volume.</Text>
         <Text size="1" color="gray">The extra features here were invented and written together with AI.</Text>
       </Flex>
     </Theme>

@@ -6,7 +6,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session
 const path = require('path');
 const fs = require('fs');
 
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.5.0';
 const HOME_URL = 'https://soundcloud.com/';
 const TOP_H = 52, BOTTOM_H = 46, SIDE_W = 210;
 
@@ -22,8 +22,8 @@ function defaultStore() {
   return {
     adblock: false, anims: true, redesign: true,
     rd: { rdCards: true, rdButtons: true, rdHeader: true, rdPlayer: true, rdComments: true, rdSidebar: true, rdInputs: true, rdPopups: true },
-    playerPopup: true, trayHide: true, autostart: false, sidebarOpen: true,
-    playAfterClose: true,
+    playerPopup: true, autostart: false, sidebarOpen: true,
+    playAfterClose: false,
     extensions: [], lastUrl: HOME_URL, volume: 0.8, muted: false,
     speed: 1, repeatOne: false, notify: false, zoom: 1,
     recent: [], links: [], startMin: false, bossKey: false, alwaysOnTop: false,
@@ -34,7 +34,10 @@ function defaultStore() {
 function loadStore() {
   try {
     const raw = fs.readFileSync(STORE_FILE(), 'utf8');
-    const s = Object.assign(defaultStore(), JSON.parse(raw));
+    const parsed = JSON.parse(raw);
+    const s = Object.assign(defaultStore(), parsed);
+    if (parsed.playAfterClose === undefined && parsed.trayHide) s.playAfterClose = true;
+    delete s.trayHide;
     s.rd = Object.assign(defaultStore().rd, s.rd || {});
     s.shellTheme = Object.assign(defaultStore().shellTheme, s.shellTheme || {});
     s.stats = Object.assign(defaultStore().stats, s.stats || {});
@@ -393,23 +396,37 @@ function createMain() {
   });
   app.on('browser-window-created', (_e, win) => {
     if (Date.now() - lastPopupAt > 8000) return;
+    const authWin = win;
     try {
-      win.webContents.on('did-navigate', (_ev, url) => {
+      // Only a finished login closes the popup: a SoundCloud page that is
+      // not an OAuth step. Closing earlier would kill the flow halfway.
+      authWin.webContents.on('did-navigate', (_ev, url) => {
         try {
           const u = new URL(url);
           const host = u.hostname.toLowerCase();
+          const path = (u.pathname + u.search).toLowerCase();
           const isSC = host === 'soundcloud.com' || host.endsWith('.soundcloud.com');
-          if (isSC && !url.includes('w.soundcloud.com/player')) {
-            try { win.close(); } catch (e) { /* ignore */ }
-            const wc = siteWC();
-            if (wc) wc.reload();
-            showMain();
+          const isWidget = url.includes('w.soundcloud.com/player');
+          const isOAuthStep = path.includes('callback') || path.includes('oauth')
+            || path.includes('connect') || path.includes('signin') || path.includes('login')
+            || path.includes('signup') || path.includes('auth') || path.includes('code=');
+          if (isSC && !isWidget && !isOAuthStep) {
+            try { authWin.close(); } catch (e) { /* ignore */ }
           }
+        } catch (e) { /* ignore */ }
+      });
+      // However the popup goes away, the main view reloads with the session.
+      authWin.on('closed', () => {
+        try {
+          const wc = siteWC();
+          if (wc) wc.reload();
+          showMain();
         } catch (e) { /* ignore */ }
       });
     } catch (e) { /* ignore */ }
   });
 
+  siteView.webContents.on('did-start-loading', () => { injectSite(); });
   siteView.webContents.on('did-finish-load', () => { injectSite(); applyVolume(); sendNavState(); });
   siteView.webContents.on('did-navigate-in-page', () => { injectSite(); sendNavState(); });
   siteView.webContents.on('did-navigate', () => { sendNavState(); });
@@ -427,13 +444,12 @@ function createMain() {
   mainWin.on('hide', () => setPollMs(4000));
   mainWin.on('show', () => setPollMs(1500));
   mainWin.on('minimize', () => {
-    try { if (store.trayHide && mainWin) mainWin.hide(); } catch (e) { /* ignore */ }
+    try { if (store.playAfterClose && mainWin) mainWin.hide(); } catch (e) { /* ignore */ }
     setPollMs(4000);
   });
   mainWin.on('restore', () => setPollMs(1500));
   mainWin.on('close', (e) => {
-    const keep = store.playAfterClose !== false;
-    if (keep && !allowExit) { e.preventDefault(); mainWin.hide(); }
+    if (store.playAfterClose && !allowExit) { e.preventDefault(); mainWin.hide(); }
   });
   mainWin.on('closed', () => { mainWin = null; siteView = null; });
 }
