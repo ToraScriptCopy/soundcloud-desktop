@@ -14,7 +14,7 @@
 
 > Fan project, not affiliated with SoundCloud. All music, the name and the logo belong to SoundCloud and its artists.
 
-[Download](#-download) - [Builds](#-builds) - [Features](#-features) - [Platforms](#-platforms) - [FAQ](#-faq)
+[Download](#-download) - [Builds](#-builds) - [Screenshots](#screenshots) - [Features](#-features) - [Platforms](#-platforms) - [FAQ](#-faq)
 
 </div>
 
@@ -27,16 +27,22 @@ Grab the latest release on the [Releases page](https://github.com/ToraScriptCopy
 |---|---|---|---|---|
 | **Classic** (WPF) | `...-Portable-vX.zip` | - | - | ~3 MB |
 | **Alternative UI** (Electron + Radix, experimental) | `...-AlternativeUI-vX.zip` | - | `...-Linux-AlternativeUI-vX.tar.gz` | ~160 MB |
-| **Ultra Light** (single file) | `SoundCloudUltraLight.exe` | `SoundCloudUltraLight-x86.exe` | `...-Linux-UltraLight-vX.tar.gz` | ~100 MB |
+| **Light** (single file) | `SoundCloudLight.exe` | `SoundCloudLight-x86.exe` | `SoundCloudLight-Linux-vX.tar.gz` | ~100 MB |
 
-The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. Alt and Ultra Light on Windows need nothing extra. On Linux, Alt needs basic desktop libs (`libnss3`, `libatk`, `libcups`), Ultra Light needs WebKitGTK (`libwebkit2gtk-4.1-0`).
-
-
+The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. Light installs it for you when it is missing. Alt needs nothing extra on Windows. On Linux, Alt needs basic desktop libs (`libnss3`, `libatk`, `libcups`), Light needs WebKitGTK (`libwebkit2gtk-4.1-0`).
 
 
 - **Classic (WPF)** - the main build. Fluent shell, Now playing popup, PiP player, hotkeys, extensions, 14 themes, encrypted local settings.
 - **Alternative UI** - the experimental playground. Real Radix Themes interface with a full shell (navigation, sidebar, bottom bar) plus 20 extra desktop features. Bigger download, needs no WebView2.
-- **Ultra Light** - one exe and nothing else, just SoundCloud in a window titled SoundCloud Light. Login lives in system files, the folder stays clean.
+- **Light** - one exe and nothing else, just SoundCloud in a window titled SoundCloud Light. Login lives in system files, the folder stays clean. Installs WebView2 itself when it is missing.
+
+## Screenshots
+
+Real windows captured from running builds.
+
+| Classic | Alternative UI |
+|---|---|
+| ![Classic](https://github.com/ToraScriptCopy/soundcloud-desktop/raw/main/docs/screenshots/classic.png) | ![Alternative UI](https://github.com/ToraScriptCopy/soundcloud-desktop/raw/main/docs/screenshots/alt.png) |
 
 <details>
 <summary><strong>All 20 Alt extras (click to expand)</strong></summary>
@@ -90,7 +96,7 @@ The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?Li
 |---|---|---|---|
 | Classic (WPF) | Yes | No | No, WPF is Windows-only |
 | Alternative UI | Yes | No | Yes, portable tar |
-| Ultra Light | Yes, single exe | Yes, single exe | Binary via CI, or run from source: `pip install pywebview` then `python app.py` |
+| Light | Yes, single exe | Yes, single exe | Yes, portable tar |
 
 Linux builds are produced automatically by CI on every release. Classic cannot come to Linux: WPF only exists on Windows.
 
@@ -103,7 +109,7 @@ No. Fan project, not affiliated with SoundCloud.
 
 <details>
 <summary>Where is my login stored?</summary>
-In system files, never next to the exe. Classic uses LocalAppData, Alt uses its Electron profile, Ultra Light uses its own LocalAppData folder (XDG data dir on Linux).
+In system files, never next to the exe. Classic uses LocalAppData, Alt uses its Electron profile, Light uses its own LocalAppData folder (XDG data dir on Linux).
 </details>
 
 <details>

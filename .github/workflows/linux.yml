@@ -61,12 +61,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install pywebview pyinstaller
       - name: Build single file
-        working-directory: UltraLight
-        run: pyinstaller --onefile --noconsole --name SoundCloudUltraLightLinux app.py
+        working-directory: Light
+        run: pyinstaller --onefile --noconsole --name SoundCloudLightLinux app.py
       - name: Archive
-        run: tar czf SoundCloudDesktopBeta-Linux-UltraLight-${{ env.TAG }}.tar.gz -C UltraLight/dist SoundCloudUltraLightLinux
+        run: tar czf SoundCloudLight-Linux-${{ env.TAG }}.tar.gz -C Light/dist SoundCloudLightLinux
       - name: Attach to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
-          files: SoundCloudDesktopBeta-Linux-UltraLight-${{ env.TAG }}.tar.gz
+          files: SoundCloudLight-Linux-${{ env.TAG }}.tar.gz

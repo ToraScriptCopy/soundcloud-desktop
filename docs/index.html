@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SoundCloud Desktop - Lightweight Unofficial SoundCloud Client for Windows and Linux</title>
-  <meta name="description" content="SoundCloud Desktop is the most lightweight unofficial SoundCloud client. Three builds: Classic, Alternative UI with Radix, and single-file Ultra Light. Portable, no installer, login that sticks." />
-  <meta name="keywords" content="soundcloud desktop, soundcloud client, soundcloud app windows, soundcloud player, unofficial soundcloud, soundcloud portable, soundcloud linux, soundcloud redesign, soundcloud adblock" />
+  <meta name="description" content="SoundCloud Desktop is the most lightweight unofficial SoundCloud client. Three builds: Classic, experimental Alternative UI with Radix, and single-file Light. Portable, no installer, login that sticks." />
+  <meta name="keywords" content="soundcloud desktop, soundcloud client, soundcloud app windows, soundcloud player, unofficial soundcloud, soundcloud portable, soundcloud linux, soundcloud redesign, soundcloud light" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="ToraScriptCopy" />
   <link rel="canonical" href="https://torascriptcopy.github.io/soundcloud-desktop/" />
-  <meta name="theme-color" content="#131314" />
+  <meta name="theme-color" content="#191919" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="SoundCloud Desktop - Lightweight Unofficial Client" />
   <meta property="og:description" content="Three portable builds. No installer. Login that sticks. ReDesign, PiP player, hotkeys, extensions." />
@@ -18,7 +18,6 @@
   <meta name="twitter:title" content="SoundCloud Desktop" />
   <meta name="twitter:description" content="The most lightweight unofficial SoundCloud client for Windows and Linux." />
   <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="https://github.com/ToraScriptCopy/soundcloud-desktop/raw/main/WpfApp1/assets/sc-icon.png" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -29,7 +28,7 @@
     "offers": { "@type": "Offer", "price": "0" },
     "description": "Lightweight unofficial SoundCloud desktop client. Portable builds, persistent login, ReDesign themes, PiP player.",
     "downloadUrl": "https://github.com/ToraScriptCopy/soundcloud-desktop/releases",
-    "softwareVersion": "3.0",
+    "softwareVersion": "3.1",
     "author": { "@type": "Person", "name": "ToraScriptCopy" }
   }
   </script>
@@ -37,106 +36,211 @@
 <body>
   <header class="topbar">
     <div class="wrap topbar-inner">
-      <span class="brand"><span class="brand-dot"></span>SoundCloud Desktop</span>
-      <nav>
-        <a href="#builds">Builds</a>
-        <a href="#features">Features</a>
-        <a href="#platforms">Platforms</a>
-        <a href="#faq">FAQ</a>
+      <a class="wordmark" href="./">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f76b15" stroke-width="2.4" stroke-linecap="round">
+          <path d="M4 10v4" /><path d="M8 7v10" /><path d="M12 4v16" /><path d="M16 8v8" /><path d="M20 11v2" />
+        </svg>
+        <span>SoundCloud Desktop</span>
+      </a>
+      <nav class="main-nav">
+        <a href="#builds" data-i18n="nav_builds">Builds</a>
+        <a href="#shots" data-i18n="nav_shots">Screenshots</a>
+        <a href="#features" data-i18n="nav_features">Features</a>
+        <a href="#releases" data-i18n="nav_releases">Releases</a>
+        <a href="#source" data-i18n="nav_source">Source</a>
+        <a href="#verify" data-i18n="nav_verify">Safety</a>
+        <a href="#faq" data-i18n="nav_faq">FAQ</a>
       </nav>
-      <a class="btn btn-primary" href="https://github.com/ToraScriptCopy/soundcloud-desktop/releases">Download</a>
+      <div class="lang-picker">
+        <button class="lang-btn" id="langBtn" aria-label="Language"></button>
+        <div class="lang-menu" id="langMenu"></div>
+      </div>
     </div>
   </header>
 
   <main class="wrap">
     <section class="hero">
-      <p class="eyebrow">Unofficial fan client</p>
-      <h1>SoundCloud on your desktop,<br />without the weight.</h1>
-      <p class="lede">A 3 MB portable app around the real site. No installer, no services, no telemetry. Login sticks, music keeps playing in the tray.</p>
+      <p class="eyebrow" data-i18n="hero_eyebrow">Unofficial fan client</p>
+      <h1 data-i18n="hero_title">SoundCloud on your desktop, without the weight.</h1>
+      <p class="lede" data-i18n="hero_lede">A 3 MB portable app around the real site. No installer, no services, no telemetry. Login sticks, music keeps playing in the tray.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary btn-large" href="https://github.com/ToraScriptCopy/soundcloud-desktop/releases">Get the latest release</a>
-        <a class="btn btn-outline btn-large" href="https://github.com/ToraScriptCopy/soundcloud-desktop">Source on GitHub</a>
-      </div>
-      <div class="hero-stats">
-        <div><strong>3 MB</strong><span>Classic download</span></div>
-        <div><strong>3</strong><span>builds to pick from</span></div>
-        <div><strong>14</strong><span>themes in Classic</span></div>
-        <div><strong>0</strong><span>installers, services, ads</span></div>
+        <a class="btn btn-primary btn-large" href="https://github.com/ToraScriptCopy/soundcloud-desktop/releases">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12" /><path d="M7 10l5 5 5-5" /><path d="M4 21h16" /></svg>
+          <span data-i18n="hero_cta1">Get the latest release</span>
+        </a>
+        <a class="btn btn-flat btn-large" href="https://github.com/ToraScriptCopy/soundcloud-desktop">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l-4 3 4 3" /><path d="M16 9l4 3-4 3" /></svg>
+          <span data-i18n="hero_cta2">Source on GitHub</span>
+        </a>
       </div>
     </section>
 
     <section id="builds" class="section">
-      <h2>Pick your build</h2>
+      <h2 data-i18n="builds_title">Pick your build</h2>
+      <p class="section-sub" data-i18n="builds_sub">Three separate apps, one shared goal: SoundCloud without bloat.</p>
       <div class="cards">
         <article class="card">
-          <h3>Classic</h3>
-          <p class="card-tag">Windows - WPF - 3 MB</p>
-          <p>The main build. Fluent shell, Now playing popup, PiP player, hotkeys, extensions, 14 themes, encrypted local settings.</p>
-        </article>
-        <article class="card card-accent">
-          <h3>Alternative UI <span class="pill">experimental</span></h3>
-          <p class="card-tag">Windows - Electron + Radix</p>
-          <p>The playground build: real Radix Themes interface, 20 extra desktop features, shell themes, sleep timer, stats, update checker.</p>
+          <div class="card-top">
+            <span class="icon-badge">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M9 21h6" /><path d="M12 17v4" /></svg>
+            </span>
+            <h3 data-i18n="build_classic_t">Classic</h3>
+          </div>
+          <p class="card-tag">Windows - 3 MB</p>
+          <p class="desc" data-i18n="build_classic_d">The main build. Fluent shell, Now playing popup, PiP player, hotkeys, extensions, 14 themes, encrypted local settings.</p>
+          <a class="btn btn-flat" href="https://github.com/ToraScriptCopy/soundcloud-desktop/releases">
+            <span data-i18n="build_dl">Download</span>
+          </a>
         </article>
         <article class="card">
-          <h3>Ultra Light</h3>
-          <p class="card-tag">Windows x64 + x86 - one exe</p>
-          <p>One file and nothing else. Just SoundCloud in a window, login kept in system files. No settings, no chrome, no noise.</p>
+          <div class="card-top">
+            <span class="icon-badge">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6H9z" /><path d="M3 9h6v6H3z" /><path d="M15 15h6v6h-6z" /></svg>
+            </span>
+            <h3><span data-i18n="build_alt_t">Alternative UI</span><span class="pill" data-i18n="build_alt_tag">experimental</span></h3>
+          </div>
+          <p class="card-tag">Windows + Linux - Electron + Radix</p>
+          <p class="desc" data-i18n="build_alt_d">The playground build: real Radix Themes interface, 20 extra desktop features, shell themes, sleep timer, stats, update checker.</p>
+          <a class="btn btn-flat" href="https://github.com/ToraScriptCopy/soundcloud-desktop/releases">
+            <span data-i18n="build_dl">Download</span>
+          </a>
         </article>
+        <article class="card">
+          <div class="card-top">
+            <span class="icon-badge">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" /></svg>
+            </span>
+            <h3 data-i18n="build_light_t">Light</h3>
+          </div>
+          <p class="card-tag">Windows x64 + x86 - one file</p>
+          <p class="desc" data-i18n="build_light_d">One file and nothing else. Just SoundCloud in a window, login kept in system files. No settings, no chrome, no noise.</p>
+          <a class="btn btn-flat" href="https://github.com/ToraScriptCopy/soundcloud-desktop/releases">
+            <span data-i18n="build_dl">Download</span>
+          </a>
+        </article>
+      </div>
+    </section>
+
+    <section id="shots" class="section">
+      <h2 data-i18n="shots_title">How it looks</h2>
+      <p class="section-sub" data-i18n="shots_sub">Real windows, captured from running builds.</p>
+      <div class="shots">
+        <figure class="shot">
+          <img src="screenshots/classic.png" alt="Classic build window" loading="lazy" />
+          <p data-i18n="shot_classic">Classic: Fluent shell, sidebar, Now playing bar.</p>
+        </figure>
+        <figure class="shot">
+          <img src="screenshots/alt.png" alt="Alternative UI window" loading="lazy" />
+          <p data-i18n="shot_alt">Alternative UI: Radix shell with navigation and sidebar.</p>
+        </figure>
       </div>
     </section>
 
     <section id="features" class="section">
-      <h2>What is inside</h2>
-      <div class="features">
-        <div><strong>Login that sticks</strong><span>Google, Apple or password. Restart, still signed in.</span></div>
-        <div><strong>Now playing popup</strong><span>Cover art, artist, controls, minimize to tray.</span></div>
-        <div><strong>PiP widget</strong><span>Any track or playlist in an always-on-top window.</span></div>
-        <div><strong>ReDesign flags</strong><span>Every part of the site restyled separately, each with its own toggle.</span></div>
-        <div><strong>Promo killer</strong><span>Become-an-author banners removed automatically.</span></div>
-        <div><strong>Extensions</strong><span>Load unpacked Chrome extensions from a folder.</span></div>
-        <div><strong>Hotkeys</strong><span>Numpad controls that work even unfocused.</span></div>
-        <div><strong>Quiet adblock</strong><span>Off by default, never touches login windows.</span></div>
+      <h2 data-i18n="feat_title">What is inside</h2>
+      <div class="features" id="featGrid">
+        <div class="feature">
+          <span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="14" r="4" /><path d="M11 11l9-9" /><path d="M17 4l3 3" /><path d="M14 7l3 3" /></svg></span>
+          <div><strong data-i18n="f1t">Login that sticks</strong><span data-i18n="f1d">Google, Apple or password. Restart, still signed in.</span></div>
+        </div>
+        <div class="feature">
+          <span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2" /><path d="M10 9l4 2-4 2z" /><path d="M8 21h8" /></svg></span>
+          <div><strong data-i18n="f2t">Now playing popup</strong><span data-i18n="f2d">Cover art, artist, controls, minimize to tray.</span></div>
+        </div>
+        <div class="feature">
+          <span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="13" height="10" rx="2" /><rect x="15" y="11" width="7" height="6" rx="1.5" /></svg></span>
+          <div><strong data-i18n="f3t">PiP widget</strong><span data-i18n="f3d">Any track or playlist in an always-on-top window.</span></div>
+        </div>
+        <div class="feature">
+          <span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h16" /><circle cx="9" cy="8" r="2.5" /><path d="M4 16h16" /><circle cx="15" cy="16" r="2.5" /></svg></span>
+          <div><strong data-i18n="f4t">ReDesign with flags</strong><span data-i18n="f4d">Every part of the site restyled separately, each with its own toggle.</span></div>
+        </div>
+        <div class="feature">
+          <span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v5l-4 2v-7L3 5z" /><path d="M4 4l16 16" /></svg></span>
+          <div><strong data-i18n="f5t">Promo killer</strong><span data-i18n="f5d">Become-an-author banners removed automatically.</span></div>
+        </div>
+        <div class="feature">
+          <span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v4h4v6h-4v4H9v-4H5V7h4V3z" /><circle cx="12" cy="10" r="1.4" /></svg></span>
+          <div><strong data-i18n="f6t">Extensions</strong><span data-i18n="f6d">Load unpacked Chrome extensions from a folder.</span></div>
+        </div>
+        <div class="feature">
+          <span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="10" rx="2" /><path d="M6 11h.01M10 11h.01M14 11h.01M18 11h.01M7 14h10" /></svg></span>
+          <div><strong data-i18n="f7t">Hotkeys</strong><span data-i18n="f7d">Numpad controls that work even unfocused.</span></div>
+        </div>
+        <div class="feature">
+          <span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z" /><path d="M9 12l2 2 4-4" /></svg></span>
+          <div><strong data-i18n="f8t">Quiet adblock</strong><span data-i18n="f8d">Off by default, never touches login windows.</span></div>
+        </div>
       </div>
     </section>
 
     <section id="platforms" class="section">
-      <h2>Platforms</h2>
-      <table>
-        <tr><th>Build</th><th>Windows x64</th><th>Windows x86</th><th>Linux x64</th></tr>
-        <tr><td>Classic (WPF)</td><td>Yes</td><td>No</td><td>No - WPF is Windows-only</td></tr>
-        <tr><td>Alternative UI (Electron)</td><td>Yes</td><td>No</td><td>Yes, portable tar</td></tr>
-        <tr><td>Ultra Light</td><td>Yes, single exe</td><td>Yes, single exe</td><td>Yes, portable tar via CI</td></tr>
+      <h2 data-i18n="plat_title">Platforms</h2>
+      <table class="data">
+        <thead><tr>
+          <th data-i18n="plat_build">Build</th><th>Windows x64</th><th>Windows x86</th><th>Linux x64</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Classic (WPF)</td><td data-i18n="yes">Yes</td><td>No</td><td data-i18n="plat_no_wpf">No - WPF is Windows-only</td></tr>
+          <tr><td>Alternative UI (Electron)</td><td data-i18n="yes">Yes</td><td>No</td><td data-i18n="plat_tar">Yes, portable tar</td></tr>
+          <tr><td>Light (single file)</td><td data-i18n="plat_exe">Yes, single exe</td><td data-i18n="plat_exe">Yes, single exe</td><td data-i18n="plat_tar2">Yes, portable tar</td></tr>
+        </tbody>
       </table>
-      <p class="muted">Linux Ultra Light: <code>pip install pywebview</code> then <code>python app.py</code>. Needs WebKitGTK system packages.</p>
+      <p class="muted" data-i18n="plat_note">Linux builds are produced automatically by CI on every release. Classic cannot come to Linux: WPF only exists on Windows.</p>
+    </section>
+
+    <section id="releases" class="section">
+      <h2 data-i18n="rel_title">All releases</h2>
+      <p class="section-sub" data-i18n="rel_sub">Loaded live from GitHub, nothing hardcoded.</p>
+      <div class="rel-list" id="relList"><p class="loading" data-i18n="loading">Loading…</p></div>
+    </section>
+
+    <section id="source" class="section">
+      <h2 data-i18n="src_title">Browse the source</h2>
+      <p class="section-sub" data-i18n="src_sub">Real files from the repository, opened in the editor. Pick a file on the left.</p>
+      <div class="src-layout">
+        <div class="filetree" id="fileTree"><p class="loading" data-i18n="loading">Loading…</p></div>
+        <div id="editor"></div>
+      </div>
+    </section>
+
+    <section id="verify" class="section">
+      <h2 data-i18n="scan_title">Verify the downloads</h2>
+      <p class="section-sub" data-i18n="scan_sub">Every file below links to its VirusTotal report by SHA-256. Hashes are read live from the latest release, compare them with your download before running it.</p>
+      <div id="scanList"><p class="loading" data-i18n="loading">Loading…</p></div>
+      <p class="muted" data-i18n="scan_how">How to check locally: on Windows run certutil -hashfile file.exe SHA256, on Linux run sha256sum file, then compare with the hash shown here.</p>
     </section>
 
     <section id="faq" class="section">
       <h2>FAQ</h2>
-      <details>
-        <summary>Is this official?</summary>
-        <p>No. Fan project, not affiliated with SoundCloud. All music and trademarks belong to SoundCloud and its artists.</p>
+      <details class="faq">
+        <summary data-i18n="faq1q">Is this official?</summary>
+        <p data-i18n="faq1a">No. Fan project, not affiliated with SoundCloud. All music and trademarks belong to SoundCloud and its artists.</p>
       </details>
-      <details>
-        <summary>Do I need to install anything?</summary>
-        <p>Classic needs WebView2 Runtime, preinstalled on most Win10/11 machines. Alt and Ultra Light need nothing extra on Windows.</p>
+      <details class="faq">
+        <summary data-i18n="faq2q">Do I need to install anything?</summary>
+        <p data-i18n="faq2a">Classic needs WebView2 Runtime, preinstalled on most Win10/11 machines. Light installs it for you if it is missing. Alt needs nothing extra on Windows.</p>
       </details>
-      <details>
-        <summary>Where is my login stored?</summary>
-        <p>In system files, never next to the exe: Classic uses LocalAppData, Alt uses its Electron profile, Ultra Light uses its own LocalAppData folder.</p>
+      <details class="faq">
+        <summary data-i18n="faq3q">Where is my login stored?</summary>
+        <p data-i18n="faq3a">In system files, never next to the exe: Classic uses LocalAppData, Alt uses its Electron profile, Light uses its own LocalAppData folder.</p>
       </details>
-      <details>
-        <summary>Something broke after a SoundCloud update?</summary>
-        <p>Playback and login are the real site inside the app. If SoundCloud changes its layout, open an issue on GitHub.</p>
+      <details class="faq">
+        <summary data-i18n="faq4q">Something broke after a SoundCloud update?</summary>
+        <p data-i18n="faq4a">Playback and login are the real site inside the app. If SoundCloud changes its layout, open an issue on GitHub.</p>
       </details>
     </section>
   </main>
 
   <footer>
     <div class="wrap footer-inner">
-      <span>SoundCloud Desktop - fan project. Not affiliated with SoundCloud.</span>
+      <span data-i18n="footer">Fan project. Not affiliated with SoundCloud.</span>
       <a href="https://github.com/ToraScriptCopy/soundcloud-desktop">GitHub</a>
     </div>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+  <script src="i18n.js"></script>
+  <script src="site.js"></script>
 </body>
 </html>

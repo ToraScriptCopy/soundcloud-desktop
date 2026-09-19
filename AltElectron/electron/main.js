@@ -1,4 +1,4 @@
-/* SoundCloud Desktop Alt 3.0.0 - experimental Electron build.
+/* SoundCloud Desktop Alt 3.1.0 - experimental Electron build.
    Radix shell (nav, sidebar, bottom bar) around a WebContentsView with
    soundcloud.com, plus player popup, settings, tray, hotkeys and extras. */
 'use strict';
@@ -6,7 +6,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session
 const path = require('path');
 const fs = require('fs');
 
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.0';
 const HOME_URL = 'https://soundcloud.com/';
 const TOP_H = 52, BOTTOM_H = 46, SIDE_W = 210;
 
