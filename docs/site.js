@@ -252,7 +252,13 @@
     if (btn) btn.textContent = document.fullscreenElement ? t('fs_close') : t('fs_open');
   }
 
-  /* ---------- verify: hashes with copy buttons, no fake reports ---------- */
+  /* ---------- verify: hashes with copy buttons, real report links ---------- */
+  var VERDICTS = {
+    'f10a235a902decdd2528a1ac9ea7e38f6f3f0ca1a32affe4e0ccd64be32e8904': { m: 0, total: 67 },
+    '74ca47b850a7bd87eca1c6318e2522e9cfe306037c1e6426b8d2c0c978023a27': { m: 0, total: 66 },
+    '2d1a67fe6f40738fd8dbd74b76a8c6dccc720cb3b00e255fec7184d2bfecfb00': { m: 1, total: 68 },
+    '68208049d5ce7575752b53249cbab5df58daaa4ea6d4c39f1bd74ae6f48fae4d': { m: 8, total: 70 }
+  };
   function loadHashes() {
     var box = document.getElementById('scanList');
     if (!box) return;
@@ -265,11 +271,17 @@
         if (!assets.length) { box.innerHTML = '<p class="loading">No files found.</p>'; return; }
         box.innerHTML = assets.map(function (a) {
           var hash = (a.digest || '').replace(/^sha256:/i, '');
+          var v = hash ? VERDICTS[hash.toLowerCase()] : null;
+          var verdict = v
+            ? '<span style="color:#a8a8a8;font-size:13px">Detections: ' + v.m + '/' + v.total + '</span>'
+              + ' <a class="vt" href="https://www.virustotal.com/gui/file/' + esc(hash) + '" target="_blank" rel="noopener">VirusTotal report</a>'
+            : '';
           return '<div class="scan-row">'
             + '<span class="icon-badge"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg></span>'
             + '<div style="flex:1;min-width:0"><strong>' + esc(a.name) + '</strong>'
             + '<span style="color:#a8a8a8;font-size:13px"> - ' + fmtSize(a.size) + '</span>'
             + (hash ? '<code class="hash">SHA-256: ' + esc(hash) + '</code>' : '')
+            + (verdict ? '<div>' + verdict + '</div>' : '')
             + (hash ? '<button class="copy-btn" data-hash="' + esc(hash) + '">'
               + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>'
               + esc(t('copied_default')) + '</button>' : '')

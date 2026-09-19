@@ -244,3 +244,16 @@ Playback and login are the real site inside the app. If SoundCloud changes its l
 ## License
 
 MIT. See [LICENSE](https://github.com/ToraScriptCopy/soundcloud-desktop/blob/main/LICENSE).
+
+## Verify downloads
+
+Scanned with VirusTotal on release day (v3.3). Compare the hash before running.
+
+| File | SHA-256 | Detections | Report |
+|---|---|---|---|
+| SoundCloudDesktopBeta-Portable-v3.3.zip | `f10a235a902decdd2528a1ac9ea7e38f6f3f0ca1a32affe4e0ccd64be32e8904` | 0/67 | [report](https://www.virustotal.com/gui/file/f10a235a902decdd2528a1ac9ea7e38f6f3f0ca1a32affe4e0ccd64be32e8904) |
+| SoundCloudDesktopBeta-Portable-AlternativeUI-v3.3.zip | `74ca47b850a7bd87eca1c6318e2522e9cfe306037c1e6426b8d2c0c978023a27` | 0/66 | [report](https://www.virustotal.com/gui/file/74ca47b850a7bd87eca1c6318e2522e9cfe306037c1e6426b8d2c0c978023a27) |
+| SoundCloudLight.exe | `2d1a67fe6f40738fd8dbd74b76a8c6dccc720cb3b00e255fec7184d2bfecfb00` | 1/68 | [report](https://www.virustotal.com/gui/file/2d1a67fe6f40738fd8dbd74b76a8c6dccc720cb3b00e255fec7184d2bfecfb00) |
+| SoundCloudLight-x86.exe | `68208049d5ce7575752b53249cbab5df58daaa4ea6d4c39f1bd74ae6f48fae4d` | 8/70 | [report](https://www.virustotal.com/gui/file/68208049d5ce7575752b53249cbab5df58daaa4ea6d4c39f1bd74ae6f48fae4d) |
+
+The Light builds trip a few heuristic engines (packed Python apps always do, Microsoft files them as Wacatac). The sources are open, compare hashes before running.
