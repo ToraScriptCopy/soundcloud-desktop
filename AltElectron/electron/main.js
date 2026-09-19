@@ -6,7 +6,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, globalShortcut, session
 const path = require('path');
 const fs = require('fs');
 
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.6.0';
 const HOME_URL = 'https://soundcloud.com/';
 const TOP_H = 52, BOTTOM_H = 46, SIDE_W = 210;
 
@@ -382,7 +382,28 @@ function createMain() {
 
   let lastPopupAt = 0;
   siteView.webContents.setWindowOpenHandler(({ url }) => {
-    if (!url.startsWith('http://') && !url.startsWith('https://')) return { action: 'deny' };
+    const u = url || '';
+    // OAuth flows start life as an about:blank popup that the opener
+    // script navigates afterwards. Denying it kills every login button.
+    if (u === 'about:blank' || u === '') {
+      lastPopupAt = Date.now();
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          width: 500, height: 680, title: 'Sign in',
+          autoHideMenuBar: true,
+          icon: asset('icon.ico'),
+          webPreferences: { partition: PARTITION },
+        },
+      };
+    }
+    if (!u.startsWith('http://') && !u.startsWith('https://')) {
+      // Hand mail and phone links to the OS instead of dropping them.
+      if (/^(mailto|tel|sms):/i.test(u)) {
+        try { shell.openExternal(u); } catch (e) { /* ignore */ }
+      }
+      return { action: 'deny' };
+    }
     lastPopupAt = Date.now();
     return {
       action: 'allow',

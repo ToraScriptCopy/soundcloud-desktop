@@ -118,8 +118,60 @@ def main():
         except Exception:
             pass
 
+    def popup_bridge():
+        # pywebview cannot open popup windows, and OAuth starts life as
+        # window.open('about:blank'). Route auth popups into this same tab
+        # instead, so the login finishes here with the full session.
+        # Anything else stays untouched.
+        try:
+            win.evaluate_js(
+                "(function(){if(window.__scPopBridge)return;"
+                "window.__scPopBridge=true;"
+                "function go(u){try{if(u)window.location.href=u;}catch(e){}}"
+                "function auth(u){u=String(u||'').toLowerCase();"
+                "if(u===''||u==='about:blank')return true;"
+                "if(u.indexOf('http')!==0)return false;"
+                "return u.indexOf('soundcloud.com')>=0"
+                "||u.indexOf('sndcdn.com')>=0"
+                "||u.indexOf('accounts.google.com')>=0"
+                "||u.indexOf('apis.google.com')>=0"
+                "||u.indexOf('googleusercontent.com')>=0"
+                "||u.indexOf('gstatic.com')>=0"
+                "||u.indexOf('appleid.apple.com')>=0"
+                "||u.indexOf('id.apple.com')>=0"
+                "||u.indexOf('facebook.com')>=0"
+                "||u.indexOf('facebook.net')>=0"
+                "||u.indexOf('fbcdn.net')>=0"
+                "||u.indexOf('connect.facebook')>=0"
+                "||u.indexOf('login')>=0||u.indexOf('signin')>=0"
+                "||u.indexOf('signup')>=0||u.indexOf('register')>=0"
+                "||u.indexOf('oauth')>=0||u.indexOf('auth')>=0;}"
+                "function shim(){return{closed:false,"
+                "location:{set href(v){if(auth(v))go(v);},"
+                "get href(){try{return window.location.href;}catch(e){return '';}}},"
+                "document:{write:function(){},writeln:function(){},close:function(){}},"
+                "postMessage:function(){},addEventListener:function(){},"
+                "removeEventListener:function(){},"
+                "close:function(){},focus:function(){},blur:function(){}};}"
+                "try{window.open=function(u){try{"
+                "if(auth(u)){if(u&&u!=='about:blank')go(u);return shim();}"
+                "}catch(e){}return shim();};}catch(e){}"
+                "try{document.addEventListener('click',function(e){"
+                "try{var t=e.target;"
+                "var a=t&&t.closest?t.closest('a[target=\"_blank\"]'):null;"
+                "if(!a||!a.href)return;"
+                "if(auth(a.href)){e.preventDefault();go(a.href);}"
+                "}catch(err){}},true);}catch(e){}"
+                "})()")
+        except Exception:
+            pass
+
     try:
         win.events.loaded += slim_chrome
+    except Exception:
+        pass
+    try:
+        win.events.loaded += popup_bridge
     except Exception:
         pass
     try:
