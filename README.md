@@ -1,43 +1,43 @@
 # SoundCloud Desktop
 
-Просто нормальный клиент SoundCloud для Windows. Открыл, включил музыку, свернул в трей. Ничего лишнего.
+A decent SoundCloud client for Windows. Open it, play some music, minimize to tray. Nothing extra.
 
-> Это фанатский проект, я не имею отношения к SoundCloud. Вся музыка, название и логотип принадлежат SoundCloud и артистам.
+> Fan project, not affiliated with SoundCloud. All music, the name and the logo belong to SoundCloud and its artists.
 
-## Скачать
+## Download
 
-Заходи в [Releases](../../releases) и бери свежий zip.
+Go to [Releases](../../releases) and grab the latest zip.
 
-Установка не нужна вообще. Распаковал куда хочешь и запустил `SoundCloudDesk.exe`. Установщик я убрал, он только мешался и постоянно ломался.
+No install needed at all. Unpack it wherever you want and run `SoundCloudDesk.exe`. I removed the installer, it kept breaking with those payload logs, so it is gone for good.
 
-Нужен только [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). На Win10 и Win11 он обычно уже стоит.
+You only need [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already.
 
-## Что тут есть
+## What is inside
 
-- Вход запоминается. Залогинился через Google, Apple или как удобно, перезапустил - ты все еще в аккаунте
-- Отдельное окно "Сейчас играет". Появляется когда стартует трек, там обложка, автор, кнопки и свернуть в трей
-- PiP плеер для трека или плейлиста. Кнопка теперь внизу, рядом с громкостью, а не торчит сверху
-- Анимации сайта. В настройках можно включить легкие анимации для карточек и кнопок
-- SoundCloud ReDesign (бета). Редизайн сайта под Material Design 3, круглые карточки и кнопки. Сыровато, но уже красиво
-- Расширения. В настройках можно выбрать папку с расширением из Chrome и оно подхватится
-- Блокировка рекламы. По умолчанию выключена, один переключатель. Окна входа и регистрации она не трогает
-- Горячие клавиши на numpad (1/2/3 треки, 4/5 громкость), все переназначается
-- 10 тем и 10 языков с автоопределением
-- Трей, автозапуск, боковая панель, громкость которая реально сохраняется
-- Настройки лежат локально в зашифрованном виде, только для твоего пользователя Windows
+- Login sticks. Sign in with Google, Apple or whatever you like, restart, and you are still signed in
+- Separate "Now playing" window. It pops up when a track starts, with cover art, artist, buttons and minimize to tray
+- PiP player for a track or playlist. The button moved down next to the volume, it no longer sticks out at the top
+- Site animations. Turn on light animations for cards and buttons in settings
+- SoundCloud ReDesign (beta). A Material Design 3 restyle in settings, rounded cards and buttons. Rough around the edges but already pretty
+- Extensions. Pick a folder with an unpacked Chrome extension in settings and it gets loaded
+- Ad blocking. Off by default, single toggle. Login and signup windows are never touched
+- Numpad hotkeys (1/2/3 tracks, 4/5 volume), everything is rebindable
+- 10 themes and 10 languages with auto detect
+- Tray, autostart, sidebar, volume that actually saves
+- Settings are stored locally encrypted, only for your Windows user
 
-## Собрать самому
+## Build it yourself
 
-Нужен VS2022 с ".NET desktop development" или просто .NET SDK:
+You need VS2022 with ".NET desktop development" or just the .NET SDK:
 
 ```powershell
 dotnet build WpfApp1/WpfApp1.csproj -c Release
 ```
 
-Готовый exe будет в `WpfApp1/bin/Release/net48`.
+The exe lands in `WpfApp1/bin/Release/net48`.
 
-## Пару заметок
+## A couple of notes
 
-- Плеер и вход это сам сайт SoundCloud внутри WebView2. Если они поменяют верстку, какие-то кнопки могут отвалиться, пиши в issues
-- Блокировщик простой, по хостам и паттернам, это не uBlock. Если что-то не грузится, выключи его
-- Папка данных лежит в `%LocalAppData%/SoundCloudDesktopBeta`, там же профиль браузера, поэтому логин и живет между запусками
+- Playback and login are the SoundCloud site itself inside WebView2. If they change the layout, some buttons may break, just open an issue
+- The blocker is simple, hosts and patterns based, it is not uBlock. If something does not load, turn it off
+- The data folder lives in `%LocalAppData%/SoundCloudDesktopBeta`, the browser profile is there too, that is why login survives restarts
