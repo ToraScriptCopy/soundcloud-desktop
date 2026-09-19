@@ -52,7 +52,7 @@ function Player() {
         {!mini ? (
           <Flex gap="3" align="center">
             {track.art
-              ? <img className="artwork" src={track.art} width="92" height="92" alt="" />
+              ? <img key={track.art} className="artwork art-swap" src={track.art} width="92" height="92" alt="" />
               : <div className="artwork" style={{ width: 92, height: 92 }} />}
             <Flex direction="column" gap="1" style={{ minWidth: 0, flex: 1 }}>
               <Heading size="3" truncate>{track.title || 'Nothing playing'}</Heading>
@@ -69,30 +69,30 @@ function Player() {
           </Flex>
         )}
         <Flex gap="2" align="center">
-          <IconButton variant="soft" onClick={() => api.cmd('prev')} title="Previous track">
+          <IconButton variant="soft" onClick={() => api.cmd('prev')}>
             <TrackPreviousIcon />
           </IconButton>
-          <Button variant="solid" onClick={() => api.cmd('toggle')} title="Play / pause">
+          <Button variant="solid" onClick={() => api.cmd('toggle')}>
             {track.playing ? <PauseIcon /> : <PlayIcon />}
           </Button>
-          <IconButton variant="soft" onClick={() => api.cmd('next')} title="Next track">
+          <IconButton variant="soft" onClick={() => api.cmd('next')}>
             <TrackNextIcon />
           </IconButton>
           <IconButton
             variant={repeat ? 'solid' : 'ghost'}
             onClick={() => api.set({ repeatOne: !repeat })}
-            title="Repeat one"
+           
           >
             <LoopIcon />
           </IconButton>
-          <IconButton variant="ghost" onClick={() => api.cmd('like')} title="Like current track">
+          <IconButton variant="ghost" onClick={() => api.cmd('like')}>
             <HeartIcon />
           </IconButton>
           {!mini ? (
             <React.Fragment>
               <IconButton
                 variant="ghost"
-                title={muted ? 'Unmute' : 'Mute'}
+               
                 onClick={() => { const m = !muted; setMuted(m); pushVol(vol, m); }}
               >
                 {muted ? <SpeakerOffIcon /> : <SpeakerLoudIcon />}
@@ -111,20 +111,20 @@ function Player() {
             value={speed}
             onValueChange={(v) => { setSpeed(v); api.set({ speed: parseFloat(v) }); }}
           >
-            <Select.Trigger title="Playback speed" />
+            <Select.Trigger />
             <Select.Content>
               {SPEEDS.map((s) => (
                 <Select.Item key={s} value={s}>{s}x</Select.Item>
               ))}
             </Select.Content>
           </Select.Root>
-          <IconButton variant="ghost" onClick={() => api.cmd('mini-toggle')} title="Mini player">
+          <IconButton variant="ghost" onClick={() => api.cmd('mini-toggle')}>
             <LapTimerIcon />
           </IconButton>
-          <IconButton variant="ghost" onClick={() => api.cmd('to-tray')} title="Minimize to tray">
+          <IconButton variant="ghost" onClick={() => api.cmd('to-tray')}>
             <ArrowDownIcon />
           </IconButton>
-          <IconButton variant="ghost" color="gray" onClick={() => api.cmd('player-hide')} title="Close">
+          <IconButton variant="ghost" color="gray" onClick={() => api.cmd('player-hide')}>
             <Cross2Icon />
           </IconButton>
         </Flex>

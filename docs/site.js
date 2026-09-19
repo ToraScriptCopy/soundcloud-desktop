@@ -181,7 +181,19 @@
       });
   }
 
-  var editor = null, editorReady = null;
+  var editor = null, editorReady = null, editorMode = '';
+  function editorHost() {
+    var host = document.getElementById('editorInner');
+    if (host) return host;
+    var box = document.getElementById('editor');
+    if (!box) return null;
+    box.innerHTML = '<div id="editorInner" style="height:100%"></div>';
+    return document.getElementById('editorInner');
+  }
+  function setCrumb(path) {
+    var c = document.getElementById('crumb');
+    if (c) c.textContent = path || '';
+  }
   function ensureEditor() {
     if (editorReady) return editorReady;
     editorReady = new Promise(function (resolve) {
@@ -196,10 +208,13 @@
         try {
           require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
           require(['vs/editor/editor.main'], function () {
-            editor = monaco.editor.create(document.getElementById('editor'), {
+            var host = editorHost();
+            if (!host) { resolve(null); return; }
+            editor = monaco.editor.create(host, {
               value: '// pick a file on the left',
               language: 'plaintext', theme: 'vs-dark', readOnly: true,
               minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false,
+              lineNumbers: 'on', renderLineHighlight: 'all', smoothScrolling: true,
             });
             resolve(editor);
           }, function () { resolve(null); });
@@ -210,8 +225,9 @@
   }
   function openFile(path) {
     var box = document.getElementById('editor');
+    setCrumb(path);
     if (isImage(path)) {
-      if (editor) { try { editor.setModel(monaco.editor.createModel('', 'plaintext')); } catch (e) { /* ignore */ } }
+      editorMode = 'img';
       if (box) {
         box.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;min-height:300px;background:#141414">'
           + '<img src="' + RAW + esc(path) + '" alt="' + esc(path) + '" style="max-width:92%;max-height:480px;object-fit:contain;border-radius:8px" />'
@@ -220,8 +236,15 @@
       return;
     }
     if (!isText(path)) {
-      if (box) box.innerHTML = '<p class="loading">Binary file, preview is not available. Open it on GitHub instead.</p>';
+      editorMode = 'bin';
+      box.innerHTML = '<p class="loading">Binary file, preview is not available. Open it on GitHub instead.</p>';
       return;
+    }
+    if (editorMode !== 'code') {
+      editorMode = 'code';
+      editor = null;
+      editorReady = null;
+      box.innerHTML = '<div id="editorInner" style="height:100%"></div>';
     }
     ensureEditor().then(function (ed) {
       fetch(RAW + path)
@@ -230,12 +253,15 @@
           if (ed) {
             var model = monaco.editor.createModel(text.slice(0, 200000), langOf(path));
             ed.setModel(model);
-          } else if (box) {
-            box.innerHTML = '<pre style="padding:16px;overflow:auto;font-size:12.5px">' + esc(text.slice(0, 20000)) + '</pre>';
+            try { ed.layout(); } catch (e) { /* ignore */ }
+          } else {
+            var b2 = document.getElementById('editor');
+            if (b2) b2.innerHTML = '<pre style="padding:16px;overflow:auto;font-size:12.5px">' + esc(text.slice(0, 20000)) + '</pre>';
           }
         })
         .catch(function () {
-          if (box && !ed) box.innerHTML = '<p class="loading">Could not load this file.</p>';
+          var b3 = document.getElementById('editor');
+          if (b3) b3.innerHTML = '<p class="loading">Could not load this file.</p>';
         });
     });
   }
@@ -249,7 +275,10 @@
     } else if (sec.requestFullscreen) {
       sec.requestFullscreen().catch(function () { /* ignore */ });
     }
-    if (btn) btn.textContent = document.fullscreenElement ? t('fs_close') : t('fs_open');
+    setTimeout(function () {
+      try { if (editor) editor.layout(); } catch (e) { /* ignore */ }
+      if (btn) btn.textContent = document.fullscreenElement ? t('fs_close') : t('fs_open');
+    }, 150);
   }
 
   /* ---------- verify: hashes with copy buttons, real report links ---------- */
@@ -311,9 +340,63 @@
       });
   }
 
+  /* ---------- screenshot lightbox with zoom and pan ---------- */
+  var zoomLevel = 1, panX = 0, panY = 0, dragOn = false, dragSX = 0, dragSY = 0;
+  function zoomApply() {
+    var img = document.getElementById('zoomImg');
+    var label = document.getElementById('zoomLabel');
+    if (!img) return;
+    img.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + zoomLevel + ')';
+    if (label) label.textContent = Math.round(zoomLevel * 100) + '%';
+  }
+  function zoomSet(z) {
+    zoomLevel = Math.min(6, Math.max(0.4, z));
+    if (zoomLevel <= 1) { panX = 0; panY = 0; }
+    zoomApply();
+  }
+  function initLightbox() {
+    var box = document.getElementById('lightbox');
+    var img = document.getElementById('zoomImg');
+    var stage = document.getElementById('zoomStage');
+    if (!box || !img || !stage) return;
+    document.querySelectorAll('.shot img').forEach(function (th) {
+      th.style.cursor = 'zoom-in';
+      th.addEventListener('click', function () {
+        img.src = th.src;
+        zoomLevel = 1; panX = 0; panY = 0;
+        zoomApply();
+        box.classList.add('open');
+      });
+    });
+    document.getElementById('zoomIn').addEventListener('click', function () { zoomSet(zoomLevel * 1.25); });
+    document.getElementById('zoomOut').addEventListener('click', function () { zoomSet(zoomLevel / 1.25); });
+    document.getElementById('zoomReset').addEventListener('click', function () { zoomSet(1); });
+    var close = function () { box.classList.remove('open'); };
+    document.getElementById('zoomClose').addEventListener('click', close);
+    box.addEventListener('click', function (e) { if (e.target === box || e.target === stage) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    stage.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      zoomSet(zoomLevel * (e.deltaY < 0 ? 1.12 : 0.9));
+    }, { passive: false });
+    stage.addEventListener('pointerdown', function (e) {
+      if (zoomLevel <= 1) return;
+      dragOn = true; dragSX = e.clientX - panX; dragSY = e.clientY - panY;
+      try { stage.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    });
+    stage.addEventListener('pointermove', function (e) {
+      if (!dragOn) return;
+      panX = e.clientX - dragSX; panY = e.clientY - dragSY;
+      zoomApply();
+    });
+    stage.addEventListener('pointerup', function () { dragOn = false; });
+    stage.addEventListener('pointercancel', function () { dragOn = false; });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initTheme();
     initTop();
+    initLightbox();
     loadReleases();
     loadTree();
     loadHashes();
@@ -323,6 +406,7 @@
     document.addEventListener('fullscreenchange', function () {
       var b = document.getElementById('fsBtn');
       if (b) b.textContent = document.fullscreenElement ? t('fs_close') : t('fs_open');
+      setTimeout(function () { try { if (editor) editor.layout(); } catch (e) { /* ignore */ } }, 150);
     });
     document.addEventListener('scd-lang', function () {
       var b = document.getElementById('fsBtn');

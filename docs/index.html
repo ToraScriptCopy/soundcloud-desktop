@@ -127,13 +127,25 @@
       <p class="section-sub" data-i18n="shots_sub">Real windows, captured from running builds.</p>
       <div class="shots">
         <figure class="shot">
-          <img src="screenshots/classic.png" alt="Classic build window" loading="lazy" />
+          <img src="screenshots/classic.png" alt="Classic build window" loading="lazy" data-zoom="1" />
           <p data-i18n="shot_classic">Classic: Fluent shell, sidebar, Now playing bar.</p>
         </figure>
         <figure class="shot">
-          <img src="screenshots/alt.png" alt="Alternative UI window" loading="lazy" />
+          <img src="screenshots/alt.png" alt="Alternative UI window" loading="lazy" data-zoom="1" />
           <p data-i18n="shot_alt">Alternative UI: Radix shell with navigation and sidebar.</p>
         </figure>
+      </div>
+      <div class="lightbox" id="lightbox">
+        <div class="lightbox-bar">
+          <button class="btn btn-flat btn-sm" id="zoomOut">−</button>
+          <span id="zoomLabel">100%</span>
+          <button class="btn btn-flat btn-sm" id="zoomIn">+</button>
+          <button class="btn btn-flat btn-sm" id="zoomReset">1:1</button>
+          <button class="btn btn-primary btn-sm" id="zoomClose">×</button>
+        </div>
+        <div class="lightbox-stage" id="zoomStage">
+          <img id="zoomImg" src="" alt="" />
+        </div>
       </div>
     </section>
 
@@ -205,7 +217,10 @@
       <p class="section-sub" data-i18n="src_sub">Real files from the repository, opened in the editor. Pick a file on the left.</p>
       <div class="src-layout">
         <div class="filetree" id="fileTree"><p class="loading" data-i18n="loading">Loading…</p></div>
-        <div id="editor"></div>
+        <div style="min-width:0">
+          <div class="crumb" id="crumb"></div>
+          <div id="editor"></div>
+        </div>
       </div>
     </section>
 

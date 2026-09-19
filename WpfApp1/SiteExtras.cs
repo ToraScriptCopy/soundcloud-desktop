@@ -1,9 +1,5 @@
 namespace WpfApp1
 {
-    // Extra CSS/JS injected into soundcloud.com. The redesign is split
-    // into flags so every part can be toggled from the ReDesign window.
-    // Text colors are left alone on purpose, only surfaces, borders,
-    // buttons and accents change.
     public static class SiteExtras
     {
         public static string BuildCss(AppState s, bool adblock)
@@ -41,7 +37,6 @@ namespace WpfApp1
                 + "s.textContent='" + css + "';})()";
         }
 
-        // Barely visible scrollbars, always on. Thumb sits at 15% opacity.
         public const string ScrollCss =
             "html{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent!important}"
             + "::-webkit-scrollbar{width:6px!important;height:6px!important}"
@@ -49,8 +44,6 @@ namespace WpfApp1
             + "::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.35)!important}"
             + "::-webkit-scrollbar-track{background:transparent!important}";
 
-        // Simple pretty animations. Transform and opacity only, so the
-        // page stays fast. No artwork rounding here on purpose.
         public const string AnimCss =
             "@keyframes scFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}"
             + "@keyframes scPopIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}"
@@ -66,10 +59,6 @@ namespace WpfApp1
             + ".playControls__play:active{transform:scale(.92)!important}"
             + "input,textarea{transition:border-color .18s ease,box-shadow .18s ease!important}";
 
-        // Promo killer. Hides "become an author" style upsell banners by
-        // their exact text, removing the whole banner root so no empty
-        // boxes stay behind. Login and signup are never touched.
-        // Runs always, independent of the adblock toggle.
         public const string PromoJs =
             "(function(){if(window.__scPromoKiller)return;window.__scPromoKiller=true;"
             + "var PH=['Uploading tracks just got way easier','Get heard by up to 100 listeners','Now available: Get heard'];"

@@ -27,18 +27,13 @@ if (!fs.existsSync(dist)) {
 }
 if (fs.existsSync(out)) fs.rmSync(out, { recursive: true, force: true });
 
-// 1. Electron binaries
 copyDir(dist, out);
-// 2. Drop the default app, ours takes its place
 for (const n of ['default_app.asar']) {
   const p = path.join(out, 'resources', n);
   if (fs.existsSync(p)) fs.rmSync(p, { force: true });
 }
-// 3. Rename launcher. Detect the TARGET platform from the dist contents,
-// not from the build machine, so cross-packing works.
 const APP_NAME = 'SoundCloudDeskAlt';
 if (fs.existsSync(path.join(out, 'Electron.app'))) {
-  // macOS bundle layout.
   const appBundle = path.join(out, APP_NAME + '.app');
   fs.renameSync(path.join(out, 'Electron.app'), appBundle);
   const contents = path.join(appBundle, 'Contents');
@@ -53,7 +48,6 @@ if (fs.existsSync(path.join(out, 'Electron.app'))) {
   copyDir(path.join(root, 'electron'), path.join(appRes, 'electron'));
   copyDir(path.join(root, 'dist'), path.join(appRes, 'dist'));
   copyDir(path.join(root, 'assets'), path.join(appRes, 'assets'));
-  // Patch bundle identity.
   const plistPath = path.join(contents, 'Info.plist');
   try {
     let plist = fs.readFileSync(plistPath, 'utf8');
@@ -67,7 +61,6 @@ if (fs.existsSync(path.join(out, 'Electron.app'))) {
   const dstBin = path.join(macDir, APP_NAME);
   if (fs.existsSync(srcBin)) fs.renameSync(srcBin, dstBin);
   try { fs.chmodSync(dstBin, 0o755); } catch (e) { /* ignore */ }
-  // Ad-hoc sign when possible (works on macOS runners, skipped elsewhere).
   try {
     const { spawnSync } = require('child_process');
     const r = spawnSync('codesign', ['--force', '--deep', '--sign', '-', appBundle], { stdio: 'pipe' });
@@ -83,7 +76,6 @@ const dstExe = path.join(out, isWinTarget ? 'SoundCloudDeskAlt.exe' : 'SoundClou
 fs.renameSync(srcExe, dstExe);
 if (!isWinTarget) fs.chmodSync(dstExe, 0o755);
 if (isWinTarget) {
-  // Brand the exe: our icon plus real version metadata instead of Electron's.
   try {
     const { rcedit } = require('rcedit');
     const ver = require(path.join(root, 'package.json')).version + '.0';
@@ -103,7 +95,6 @@ if (isWinTarget) {
       (e) => console.error('rcedit failed: ' + (e && e.message)));
   } catch (e) { console.error('rcedit failed: ' + e.message); }
 }
-// 4. App files (main process + built UI + assets, no node_modules needed at runtime)
 fs.mkdirSync(appOut, { recursive: true });
 fs.copyFileSync(path.join(root, 'package.json'), path.join(appOut, 'package.json'));
 copyDir(path.join(root, 'electron'), path.join(appOut, 'electron'));

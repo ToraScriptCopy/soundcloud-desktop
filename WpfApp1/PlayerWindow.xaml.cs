@@ -97,7 +97,6 @@ namespace WpfApp1
         }
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            // Close button hides the window, app keeps playing in background.
             e.Cancel = true;
             try { Hide(); }
             catch { }

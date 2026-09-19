@@ -93,8 +93,6 @@ namespace WpfApp1
     {
         private static string ResolveDataDir()
         {
-            // SCD_PROFILE overrides the profile folder (used for testing,
-            // so a second instance never touches the real profile).
             string custom = null;
             try { custom = Environment.GetEnvironmentVariable("SCD_PROFILE"); }
             catch { }

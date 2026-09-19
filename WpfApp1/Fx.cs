@@ -3,8 +3,6 @@ using System.Windows;
 using System.Windows.Media.Animation;
 namespace WpfApp1
 {
-    // Smooth shell animations. No layout thrash, only opacity and
-    // render transforms, so WebView2 never lags.
     public static class Fx
     {
         public static void Fade(UIElement el, int ms)
@@ -58,8 +56,6 @@ namespace WpfApp1
             }
             catch { }
         }
-        // Window entrance: fade plus a small rise. Call it from Loaded
-        // on windows without WebView2 inside.
         public static void Enter(Window w)
         {
             try

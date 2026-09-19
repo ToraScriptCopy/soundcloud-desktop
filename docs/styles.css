@@ -1,4 +1,3 @@
-/* Dark interface palette. Flat surfaces, no glow. */
 :root {
   --bg: #191919;
   --card: #1f1f1f;
@@ -23,14 +22,12 @@ html[data-theme="light"] {
   --muted: #5f6368;
 }
 html[data-theme="light"] .topbar { background: rgba(244, 244, 244, 0.94); }
-/* Scroll-reveal. */
 .rv { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
 .rv.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .rv { opacity: 1; transform: none; transition: none; }
   * { animation-duration: 0.01ms !important; }
 }
-/* Copy-hash buttons. */
 .copy-btn {
   display: inline-flex; align-items: center; gap: 7px; margin-top: 8px;
   background: var(--btn); color: var(--text); border: 1px solid var(--line);
@@ -39,10 +36,8 @@ html[data-theme="light"] .topbar { background: rgba(244, 244, 244, 0.94); }
 }
 .copy-btn:hover { background: var(--btn-hover); }
 .copy-btn.done { border-color: var(--accent); color: var(--accent); }
-/* Fullscreen source section. */
 #source:fullscreen { background: var(--bg); padding: 24px; overflow: auto; }
 #source:fullscreen #editor { height: calc(100vh - 220px); }
-/* Back to top. */
 #toTop {
   position: fixed; right: 22px; bottom: 22px; z-index: 30;
   width: 44px; height: 44px; border-radius: 99px;
@@ -52,7 +47,6 @@ html[data-theme="light"] .topbar { background: rgba(244, 244, 244, 0.94); }
 }
 #toTop.show { opacity: 1; pointer-events: auto; }
 #toTop:hover { background: var(--btn-hover); transform: translateY(-2px); }
-/* Thin quiet scrollbars. */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: rgba(140, 140, 140, 0.25); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(140, 140, 140, 0.45); }
@@ -250,3 +244,26 @@ footer { border-top: 1px solid var(--line); margin-top: 44px; }
 .footer-inner a:hover { color: var(--text); }
 .loading { color: var(--muted); padding: 18px; }
 @media (max-width: 640px) { nav.main-nav { display: none; } }
+.crumb {
+  font-size: 12.5px; color: var(--muted); padding: 0 2px 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.btn-sm { padding: 7px 15px; font-size: 12.5px; }
+.lightbox {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0, 0, 0, 0.88);
+  flex-direction: column;
+}
+.lightbox.open { display: flex; animation: pageIn 0.25s ease both; }
+.lightbox-bar {
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+  padding: 14px;
+}
+.lightbox-bar span { font-size: 13px; color: var(--muted); min-width: 48px; text-align: center; }
+.lightbox-stage {
+  flex: 1; overflow: hidden; cursor: grab;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: none;
+}
+.lightbox-stage:active { cursor: grabbing; }
+.lightbox-stage img { max-width: 94vw; max-height: 82vh; border-radius: 10px; }

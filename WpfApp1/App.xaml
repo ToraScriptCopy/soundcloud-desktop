@@ -10,7 +10,6 @@
                 <ui:ControlsDictionary />
                 <ResourceDictionary Source="Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <!-- Barely visible sliders: 15% presence until hovered. -->
             <Style TargetType="Slider">
                 <Setter Property="Opacity" Value="0.4"/>
                 <Setter Property="Template">
@@ -44,7 +43,6 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
-            <!-- Slim translucent scrollbars everywhere. -->
             <Style TargetType="{x:Type ScrollBar}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Opacity" Value="0.35"/>

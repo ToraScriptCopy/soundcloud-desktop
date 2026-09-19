@@ -37,8 +37,6 @@ namespace WpfApp1
             catch { fresh = true; }
             if (!fresh && !testProfile)
             {
-                // Another copy is already running (maybe hidden in tray).
-                // Bring its window back instead of starting a second one.
                 try { FocusRunningCopy(); }
                 catch { }
                 try { if (_singleMutex != null) _singleMutex.Dispose(); }

@@ -275,11 +275,16 @@ const AD_PATTERNS = ['/ads/', '/ads.', '/adserver', '/adservice', 'adsystem', 'p
   'adbreak', 'unruly', 'teads'];
 const AUTH_HOSTS = ['soundcloud.com', 'api.soundcloud.com', 'sndcdn.com',
   'accounts.google.com', 'apis.google.com', 'ssl.gstatic.com', 'www.gstatic.com',
-  'appleid.apple.com', 'id.apple.com'];
+  'googleusercontent.com', 'gstatic.com', 'accounts.youtube.com',
+  'appleid.apple.com', 'id.apple.com',
+  'facebook.com', 'facebook.net', 'fbcdn.net', 'connect.facebook.net'];
 function isAuthUrl(u) {
   const low = u.toLowerCase();
   if (low.includes('accounts.google.com') || low.includes('appleid.apple.com')
-    || low.includes('id.apple.com') || low.includes('/login') || low.includes('/signin')
+    || low.includes('id.apple.com') || low.includes('apis.google.com')
+    || low.includes('googleusercontent.com') || low.includes('gstatic.com')
+    || low.includes('connect.facebook') || low.includes('fbcdn.net')
+    || low.includes('/login') || low.includes('/signin')
     || low.includes('/signup') || low.includes('/register') || low.includes('/oauth')
     || low.includes('/auth') || low.includes('facebook.com/login')
     || low.includes('facebook.com/dialog')) return true;
@@ -372,11 +377,10 @@ function createMain() {
   layoutSiteView();
   siteView.webContents.loadURL(store.lastUrl || HOME_URL);
 
-  // Login popups (Google, Facebook, Apple) open as real popup windows with
-  // the opener link intact, so OAuth can talk back to the site.
-  // Nothing is injected into them: no restyle, no scripts, no blocking.
+  let lastPopupAt = 0;
   siteView.webContents.setWindowOpenHandler(({ url }) => {
     if (!url.startsWith('http://') && !url.startsWith('https://')) return { action: 'deny' };
+    lastPopupAt = Date.now();
     return {
       action: 'allow',
       overrideBrowserWindowOptions: {
@@ -386,6 +390,24 @@ function createMain() {
         webPreferences: { partition: PARTITION },
       },
     };
+  });
+  app.on('browser-window-created', (_e, win) => {
+    if (Date.now() - lastPopupAt > 8000) return;
+    try {
+      win.webContents.on('did-navigate', (_ev, url) => {
+        try {
+          const u = new URL(url);
+          const host = u.hostname.toLowerCase();
+          const isSC = host === 'soundcloud.com' || host.endsWith('.soundcloud.com');
+          if (isSC && !url.includes('w.soundcloud.com/player')) {
+            try { win.close(); } catch (e) { /* ignore */ }
+            const wc = siteWC();
+            if (wc) wc.reload();
+            showMain();
+          }
+        } catch (e) { /* ignore */ }
+      });
+    } catch (e) { /* ignore */ }
   });
 
   siteView.webContents.on('did-finish-load', () => { injectSite(); applyVolume(); sendNavState(); });
@@ -668,9 +690,10 @@ async function loadExtensions() {
 }
 
 function setupAdblock() {
-  // One listener for the whole session. shouldBlock() returns false
-  // immediately while the toggle is off, so idle cost is one call.
   const ses = session.fromPartition(PARTITION);
+  try {
+    ses.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36');
+  } catch (e) { /* ignore */ }
   ses.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, adblockListener);
 }
 function adblockListener(details, callback) {

@@ -3,7 +3,6 @@ using System.IO;
 using Microsoft.Web.WebView2.Core;
 namespace WpfApp1
 {
-    // Single toggle blocker. Off by default. Never touches login and signup flows.
     public static class AdBlock
     {
         public static bool Enabled = false;
@@ -53,7 +52,6 @@ namespace WpfApp1
             "adform", "sizmek", "flashtalking", "celtra", "mediamath",
             "quantserve", "triton", "podtrac", "chartable", "podsights"
         };
-        // Never block auth hosts. Login must always work.
         private static readonly string[] AuthHosts = new string[]
         {
             "soundcloud.com", "api.soundcloud.com", "sndcdn.com",
@@ -62,8 +60,6 @@ namespace WpfApp1
             "appleid.apple.com", "id.apple.com",
             "auth0.com"
         };
-        // Minimal cosmetic CSS. It hides only real ad slots and never
-        // touches login, signup, register or modal dialogs.
         public const string CosmeticCss =
             "[id*='adSlot']:not([class*='auth']):not([class*='login']):not([class*='signup']):not([class*='modal'])," +
             "[class*='adSlot']:not([class*='auth']):not([class*='login']):not([class*='signup']):not([class*='modal'])," +
@@ -87,7 +83,6 @@ namespace WpfApp1
                 for (int i = 0; i < AuthHosts.Length; i++)
                     if (host == AuthHosts[i] || host.EndsWith("." + AuthHosts[i]))
                     {
-                        // soundcloud itself is never blocked, only third party ad hosts
                         if (AuthHosts[i] == "soundcloud.com" || AuthHosts[i] == "api.soundcloud.com" || AuthHosts[i] == "sndcdn.com")
                             return true;
                         return true;

@@ -99,7 +99,7 @@ function Settings() {
               {ACCENTS.map(([name, color]) => (
                 <button
                   key={name}
-                  title={name}
+                 
                   onClick={() => setTheme({ accent: name })}
                   style={{
                     width: 26, height: 26, borderRadius: 99, cursor: 'pointer',

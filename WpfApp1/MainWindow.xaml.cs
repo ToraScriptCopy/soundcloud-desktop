@@ -93,7 +93,6 @@ namespace WpfApp1
             InitializeComponent();
             bool tampered;
             _state = SecureStore.Load(out tampered);
-            // --open-url= lets an external call (or a test) open a page directly.
             try
             {
                 foreach (string a in Environment.GetCommandLineArgs())
@@ -106,8 +105,6 @@ namespace WpfApp1
                 }
             }
             catch { }
-            // Migrate old vaults: the redesign used to be one toggle,
-            // now it is flags. If it was on, turn every part on.
             if (_state.ReDesign && !(_state.RdCards || _state.RdButtons || _state.RdHeader
                 || _state.RdPlayer || _state.RdComments || _state.RdSidebar
                 || _state.RdInputs || _state.RdPopups))
@@ -164,8 +161,6 @@ namespace WpfApp1
         }
         private void AnimateSidebar()
         {
-            // Instant toggle plus slide and fade on the sidebar itself.
-            // WebView2 is not inside, so it stays smooth.
             ApplySidebar();
             if (_state.SidebarOpen)
             {
@@ -380,7 +375,6 @@ namespace WpfApp1
         {
             if (await ClickPlayerAsync(JsPrev) != "no-btn") await UpdateTitleAsync();
         }
-        // Minimal flags so cookies, login and extensions keep working.
         private static readonly string EngineArgs =
             "--autoplay-policy=no-user-gesture-required"
             + " --disable-features=Translate,MediaRouter,OptimizationHints";
@@ -464,7 +458,6 @@ namespace WpfApp1
         }
         private void Browser_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
         {
-            // Every popup is a potential login window. Never block it.
             e.Handled = true;
             var deferral = e.GetDeferral();
             try

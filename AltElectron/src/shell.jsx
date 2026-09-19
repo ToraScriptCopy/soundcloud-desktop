@@ -51,6 +51,7 @@ function Shell() {
   const [recent, setRecent] = useState([]);
   const [links, setLinks] = useState([]);
   const [linkLabel, setLinkLabel] = useState('');
+  const [page, setPage] = useState(HOME);
   const editing = useRef(false);
 
   useEffect(() => {
@@ -66,6 +67,7 @@ function Shell() {
     const offs = [
       api.on('nav-state', (st) => {
         if (!editing.current) setEdit(st.url);
+        setPage(st.url || HOME);
         setCanBack(!!st.canBack);
         setCanFwd(!!st.canFwd);
       }),
@@ -93,19 +95,19 @@ function Shell() {
       <Flex direction="column" style={{ height: '100vh', background: theme.appearance === 'light' ? '#ffffff' : '#111113' }}>
         {/* Top bar */}
         <Flex align="center" gap="2" px="2" style={{ height: TOP_H, flexShrink: 0, borderBottom: '1px solid #2a2a2a' }}>
-          <IconButton variant="ghost" onClick={toggleSidebar} title="Sidebar">
+          <IconButton variant="ghost" onClick={toggleSidebar}>
             <HamburgerMenuIcon />
           </IconButton>
-          <IconButton variant="ghost" disabled={!canBack} onClick={() => api.cmd('nav-back')} title="Back">
+          <IconButton variant="ghost" disabled={!canBack} onClick={() => api.cmd('nav-back')}>
             <ArrowLeftIcon />
           </IconButton>
-          <IconButton variant="ghost" disabled={!canFwd} onClick={() => api.cmd('nav-fwd')} title="Forward">
+          <IconButton variant="ghost" disabled={!canFwd} onClick={() => api.cmd('nav-fwd')}>
             <ArrowRightIcon />
           </IconButton>
-          <IconButton variant="ghost" onClick={() => api.cmd('nav-reload')} title="Reload">
+          <IconButton variant="ghost" onClick={() => api.cmd('nav-reload')}>
             <ReloadIcon />
           </IconButton>
-          <IconButton variant="ghost" onClick={() => api.cmd('nav-go', HOME)} title="Home">
+          <IconButton variant="ghost" onClick={() => api.cmd('nav-go', HOME)}>
             <HomeIcon />
           </IconButton>
           <div style={{ flex: 1 }}>
@@ -123,7 +125,7 @@ function Shell() {
             </TextField.Root>
           </div>
           <Button variant="solid" onClick={go}>Go</Button>
-          <IconButton variant="ghost" onClick={() => api.cmd('open-settings')} title="Settings">
+          <IconButton variant="ghost" onClick={() => api.cmd('open-settings')}>
             <GearIcon />
           </IconButton>
         </Flex>
@@ -138,13 +140,13 @@ function Shell() {
               className="row-enter"
               style={{ width: SIDE_W, flexShrink: 0, borderRight: '1px solid #2a2a2a', overflowY: 'auto' }}
             >
-              <Button variant="soft" style={{ justifyContent: 'flex-start' }} onClick={() => api.cmd('nav-go', HOME)}>
+              <Button variant={page === HOME ? 'solid' : 'soft'} style={{ justifyContent: 'flex-start' }} onClick={() => api.cmd('nav-go', HOME)}>
                 <HomeIcon /> Home
               </Button>
-              <Button variant="soft" style={{ justifyContent: 'flex-start' }} onClick={() => api.cmd('nav-go', CHARTS)}>
+              <Button variant={page.indexOf('/charts') >= 0 ? 'solid' : 'soft'} style={{ justifyContent: 'flex-start' }} onClick={() => api.cmd('nav-go', CHARTS)}>
                 <BarChartIcon /> Charts
               </Button>
-              <Button variant="soft" style={{ justifyContent: 'flex-start' }} onClick={() => api.cmd('nav-go', LIKES)}>
+              <Button variant={page.indexOf('/you/likes') >= 0 ? 'solid' : 'soft'} style={{ justifyContent: 'flex-start' }} onClick={() => api.cmd('nav-go', LIKES)}>
                 <HeartIcon /> My likes
               </Button>
               <Text size="1" weight="bold" color="gray" mt="3">PiP PLAYER</Text>
@@ -164,7 +166,7 @@ function Shell() {
                   <Text size="1" weight="bold" color="gray" mt="3">RECENTLY PLAYED</Text>
                   {recent.slice(0, 8).map((r, i) => (
                     <Button key={i} size="1" variant="ghost" style={{ justifyContent: 'flex-start' }}
-                      onClick={() => api.cmd('nav-go', r.url)} title={r.artist}>
+                      onClick={() => api.cmd('nav-go', r.url)}>
                       <Text size="1" truncate>{r.title}</Text>
                     </Button>
                   ))}
@@ -177,10 +179,10 @@ function Shell() {
               {links.map((l, i) => (
                 <Flex key={i} align="center" gap="1">
                   <Button size="1" variant="ghost" style={{ justifyContent: 'flex-start', flex: 1 }}
-                    onClick={() => api.cmd('nav-go', l.url)} title={l.url}>
+                    onClick={() => api.cmd('nav-go', l.url)}>
                     <Text size="1" truncate>{l.label}</Text>
                   </Button>
-                  <IconButton size="1" variant="ghost" color="gray" onClick={() => api.cmd('link-remove', l.url)} title="Remove">
+                  <IconButton size="1" variant="ghost" color="gray" onClick={() => api.cmd('link-remove', l.url)}>
                     <Cross2Icon />
                   </IconButton>
                 </Flex>
@@ -198,10 +200,10 @@ function Shell() {
                 }}
               />
               <Flex gap="2" mt="2">
-                <IconButton variant="soft" onClick={() => api.cmd('copy-link')} title="Copy link">
+                <IconButton variant="soft" onClick={() => api.cmd('copy-link')}>
                   <CopyIcon />
                 </IconButton>
-                <IconButton variant="soft" onClick={() => api.cmd('open-ext')} title="Open in browser">
+                <IconButton variant="soft" onClick={() => api.cmd('open-ext')}>
                   <ExternalLinkIcon />
                 </IconButton>
               </Flex>
@@ -220,15 +222,15 @@ function Shell() {
             <Text size="2" truncate style={{ flex: 1 }}>
               {track.title ? (track.time ? track.time + '  -  ' : '') + track.title : 'Nothing playing'}
             </Text>
-            <IconButton variant="ghost" onClick={() => api.cmd('like')} title="Like current track">
+            <IconButton variant="ghost" onClick={() => api.cmd('like')}>
               <HeartIcon />
             </IconButton>
-            <IconButton variant="ghost" onClick={() => api.cmd('pip-open', '')} title="PiP for current page">
+            <IconButton variant="ghost" onClick={() => api.cmd('pip-open', '')}>
               <VideoIcon />
             </IconButton>
             <IconButton
               variant="ghost"
-              title={muted ? 'Unmute' : 'Mute'}
+             
               onClick={() => { const m = !muted; setMuted(m); pushVol(vol, m); }}
             >
               {muted ? <SpeakerOffIcon /> : <SpeakerLoudIcon />}
