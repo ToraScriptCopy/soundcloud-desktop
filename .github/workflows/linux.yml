@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach artifacts to'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -12,7 +17,7 @@ jobs:
   alt-linux:
     runs-on: ubuntu-latest
     env:
-      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+      TAG: ${{ inputs.tag || github.event.release.tag_name || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,7 +53,7 @@ jobs:
   ultra-linux:
     runs-on: ubuntu-latest
     env:
-      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+      TAG: ${{ inputs.tag || github.event.release.tag_name || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -81,7 +86,7 @@ jobs:
             arch: arm64
     runs-on: ${{ matrix.runner }}
     env:
-      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+      TAG: ${{ inputs.tag || github.event.release.tag_name || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -114,7 +119,7 @@ jobs:
             arch: arm64
     runs-on: ${{ matrix.runner }}
     env:
-      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+      TAG: ${{ inputs.tag || github.event.release.tag_name || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
