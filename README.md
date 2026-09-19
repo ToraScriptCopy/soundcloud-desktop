@@ -30,14 +30,79 @@ Grab the latest release on the [Releases page](https://github.com/ToraScriptCopy
 
 The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. Alt and Ultra Light on Windows need nothing extra. On Linux, Alt needs basic desktop libs (`libnss3`, `libatk`, `libcups`), Ultra Light needs WebKitGTK (`libwebkit2gtk-4.1-0`).
 
-## 🖥️ Builds
+##  Builds
 
-```mermaid
-flowchart LR
-    SC[soundcloud.com] --> C[Classic\nWPF shell\n3 MB]
-    SC --> A[Alternative UI\nElectron + Radix\n20 extras]
-    SC --> U[Ultra Light\nsingle exe\njust the site]
-```
+flowchart TB
+    %% Nodes & Grouping Definitions
+    
+    subgraph Origin [" Base Data Provider "]
+        SC[("soundcloud.com\nSoundCloud Web & API Ecosystem")]
+    end
+
+    subgraph Matrix [" Architectural Variants & Technical Specifications "]
+        
+        subgraph C_Group [" 1. Classic Shell (WPF / .NET Native) "]
+            direction TB
+            C_Arch["Engine: C# / WPF Core"]
+            C_UI["UI Framework: Native Windows Controls"]
+            C_Binary["Binary Executable: ~3 MB Overhead"]
+            C_Footprint["RAM Consumption: ~30-50 MB"]
+            C_Features["Scope: Native Audio Output, Global Hotkeys, Light Memory Footprint"]
+        end
+
+        subgraph A_Group [" 2. Alternative Client (Electron + Radix UI) "]
+            direction TB
+            A_Arch["Engine: Node.js Runtime + Chromium Core"]
+            A_UI["UI Framework: React / Radix UI Design System"]
+            A_Binary["Binary Executable: ~80-120 MB Package"]
+            A_Footprint["RAM Consumption: ~200-400 MB"]
+            A_Features["Scope: Modern Custom UI, 20+ Built-in Extras, Discord Rich Presence, EQ, Themes"]
+        end
+
+        subgraph U_Group [" 3. Ultra-Light Wrapper (Standalone Executable) "]
+            direction TB
+            U_Arch["Engine: Native OS WebView Engine (WebView2 / MSHTML)"]
+            U_UI["UI Framework: Direct Remote Web Rendering"]
+            U_Binary["Binary Executable: Single Executable File (~1 MB)"]
+            U_Footprint["RAM Consumption: ~15-30 MB"]
+            U_Features["Scope: Raw Web Application, Zero Dependencies, Minimal Overhead"]
+        end
+
+    end
+
+    subgraph Integration [" System & OS Integration Layer "]
+        SMTC["OS System Media Transport Controls"]
+        AUDIO["Direct System Audio Stream Output"]
+        EXTRAS["Custom Modules & Extension Engine"]
+    end
+
+    %% Flow Pipelines
+    SC ==>|"REST / WebSocket API Data Pipeline"| C_Arch
+    SC ==>|"Full Web Stack & API Integration"| A_Arch
+    SC ==>|"Direct HTTPS Web Interface Rendering"| U_Arch
+
+    %% Internal Data Mapping
+    C_Arch --> C_UI --> C_Binary --> C_Footprint --> C_Features
+    A_Arch --> A_UI --> A_Binary --> A_Footprint --> A_Features
+    U_Arch --> U_UI --> U_Binary --> U_Footprint --> U_Features
+
+    %% Integration Pipelines
+    C_Features --> SMTC & AUDIO
+    A_Features --> EXTRAS & SMTC & AUDIO
+    U_Features --> AUDIO
+
+    %% Styling Classes for GitHub Dark/Light Themes
+    classDef main fill:#ff5500,stroke:#222,stroke-width:2px,color:#fff,font-weight:bold;
+    classDef classic fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef alt fill:#0f172a,stroke:#a855f7,stroke-width:2px,color:#f8fafc;
+    classDef ultra fill:#0f172a,stroke:#22c55e,stroke-width:2px,color:#f8fafc;
+    classDef system fill:#1e293b,stroke:#64748b,stroke-width:1px,color:#cbd5e1;
+
+    class SC main;
+    class C_Arch,C_UI,C_Binary,C_Footprint,C_Features classic;
+    class A_Arch,A_UI,A_Binary,A_Footprint,A_Features alt;
+    class U_Arch,U_UI,U_Binary,U_Footprint,U_Features ultra;
+    class SMTC,AUDIO,EXTRAS system;
 
 - **Classic (WPF)** - the main build. Fluent shell, Now playing popup, PiP player, hotkeys, extensions, 14 themes, encrypted local settings.
 - **Alternative UI** - the experimental playground. Real Radix Themes interface with a full shell (navigation, sidebar, bottom bar) plus 20 extra desktop features. Bigger download, needs no WebView2.
