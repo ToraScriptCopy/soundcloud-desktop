@@ -1,0 +1,40 @@
+<ui:FluentWindow x:Class="WpfApp1.RedesignWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="ReDesign" Height="480" Width="380"
+        MinHeight="380" MinWidth="320"
+        WindowStartupLocation="CenterOwner"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        WindowCornerPreference="Round">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar x:Name="RdBar" Grid.Row="0" Title="ReDesign" Height="30"/>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="16,2,16,16">
+                <ui:ToggleSwitch x:Name="SwCards" Margin="0,6,0,0"
+                                 Checked="Sw_Changed" Unchecked="Sw_Changed"/>
+                <ui:ToggleSwitch x:Name="SwButtons" Margin="0,6,0,0"
+                                 Checked="Sw_Changed" Unchecked="Sw_Changed"/>
+                <ui:ToggleSwitch x:Name="SwHeader" Margin="0,6,0,0"
+                                 Checked="Sw_Changed" Unchecked="Sw_Changed"/>
+                <ui:ToggleSwitch x:Name="SwPlayer" Margin="0,6,0,0"
+                                 Checked="Sw_Changed" Unchecked="Sw_Changed"/>
+                <ui:ToggleSwitch x:Name="SwComments" Margin="0,6,0,0"
+                                 Checked="Sw_Changed" Unchecked="Sw_Changed"/>
+                <ui:ToggleSwitch x:Name="SwSidebar" Margin="0,6,0,0"
+                                 Checked="Sw_Changed" Unchecked="Sw_Changed"/>
+                <ui:ToggleSwitch x:Name="SwInputs" Margin="0,6,0,0"
+                                 Checked="Sw_Changed" Unchecked="Sw_Changed"/>
+                <ui:ToggleSwitch x:Name="SwPopups" Margin="0,6,0,0"
+                                 Checked="Sw_Changed" Unchecked="Sw_Changed"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</ui:FluentWindow>

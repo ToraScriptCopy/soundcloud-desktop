@@ -11,7 +11,7 @@ namespace WpfApp1
         public AuthWindow()
         {
             InitializeComponent();
-            Loaded += delegate { Fx.Fade(this, 200); };
+            Loaded += delegate { Fx.Enter(this); };
         }
 
         public async void OpenPopupAsync(CoreWebView2Environment env, CoreWebView2NewWindowRequestedEventArgs e, CoreWebView2Deferral deferral)

@@ -42,6 +42,7 @@
                                  Checked="SiteAnimsSwitch_Changed" Unchecked="SiteAnimsSwitch_Changed"/>
                 <ui:ToggleSwitch x:Name="ReDesignSwitch" Margin="0,6,0,0"
                                  Checked="ReDesignSwitch_Changed" Unchecked="ReDesignSwitch_Changed"/>
+                <ui:Button x:Name="RdOpenBtn" HorizontalAlignment="Stretch" Margin="0,6,0,0" Click="RdOpenBtn_Click"/>
                 <ui:ToggleSwitch x:Name="PlayerPopupSwitch" Margin="0,6,0,14"
                                  Checked="PlayerPopupSwitch_Changed" Unchecked="PlayerPopupSwitch_Changed"/>
 

@@ -6,3 +6,6 @@ TestResults/
 release/
 portable/
 *.log
+AltElectron/node_modules/
+AltElectron/dist/
+AltElectron/portable/

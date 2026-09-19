@@ -21,7 +21,7 @@ namespace WpfApp1
             _autoplay = autoplay;
             PipTitle.Text = Loc.Get("PipTitle");
             PipCloseItem.Header = Loc.Get("TipClose");
-            Loaded += delegate { Fx.Fade(this, 200); };
+            Loaded += delegate { Fx.Enter(this); };
             Loaded += PipWindow_Loaded;
         }
         public static string BuildWidgetUrl(string pageUrl, bool autoplay)

@@ -1,16 +1,34 @@
 namespace WpfApp1
 {
-    // Extra CSS injected into soundcloud.com. Both are optional
-    // and toggled from settings.
+    // Extra CSS/JS injected into soundcloud.com. The redesign is split
+    // into flags so every part can be toggled from the ReDesign window.
+    // Text colors are left alone on purpose, only surfaces, borders,
+    // buttons and accents change.
     public static class SiteExtras
     {
-        public static string BuildCss(bool hideHeader, bool anims, bool redesign, bool adblock)
+        public static string BuildCss(AppState s, bool adblock)
         {
             string css = "";
-            if (hideHeader) css += "header.header{display:none!important;}";
+            if (s.HideHeader)
+            {
+                css += "header.header{display:none!important;}";
+            }
+            else if (s.ReDesign && s.RdHeader)
+            {
+                css += RdHeader;
+            }
             if (adblock) css += AdBlock.CosmeticCss;
-            if (anims) css += AnimCss;
-            if (redesign) css += RedesignCss;
+            if (s.SiteAnims) css += AnimCss;
+            if (s.ReDesign)
+            {
+                if (s.RdCards) css += RdCards;
+                if (s.RdButtons) css += RdButtons;
+                if (s.RdPlayer) css += RdPlayer;
+                if (s.RdComments) css += RdComments;
+                if (s.RdSidebar) css += RdSidebar;
+                if (s.RdInputs) css += RdInputs;
+                if (s.RdPopups) css += RdPopups;
+            }
             return css;
         }
 
@@ -23,36 +41,116 @@ namespace WpfApp1
                 + "s.textContent='" + css + "';})()";
         }
 
-        // Simple pretty animations for site elements. Transform and opacity
-        // only, so the page stays fast.
+        // Simple pretty animations. Transform and opacity only, so the
+        // page stays fast. No artwork rounding here on purpose.
         public const string AnimCss =
             "@keyframes scFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}"
+            + "@keyframes scPopIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}"
+            + "@keyframes scDropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}"
             + ".soundList__item,.searchItem,.chartTrack,.trackItem,.sound__body,.commentItem{animation:scFadeUp .45s ease both}"
-            + "button,.button,.sc-button{transition:transform .18s ease,background-color .18s ease,box-shadow .18s ease!important}"
+            + "button,.button,.sc-button{transition:transform .18s ease,background-color .18s ease,box-shadow .18s ease,border-color .18s ease!important}"
             + "button:hover,.button:hover,.sc-button:hover{transform:translateY(-1px)}"
-            + "button:active,.button:active,.sc-button:active{transform:translateY(0) scale(.98)}"
+            + "button:active,.button:active,.sc-button:active{transform:translateY(0) scale(.97)}"
             + "a{transition:color .18s ease,opacity .18s ease}"
-            + ".image__full,.sound__coverArt img,.trackItem__image img,.visualSound__artwork img{transition:transform .25s ease,box-shadow .25s ease!important;border-radius:12px!important}"
-            + ".soundList__item:hover .image__full,.trackItem:hover .trackItem__image img{transform:scale(1.03)}"
-            + ".playControls__inner,.playControls__elements{transition:opacity .25s ease}"
+            + ".modal__modal,.modal,.dialog{animation:scPopIn .25s ease both}"
+            + ".dropdownContent,.header__navMenu,[role='menu'],[role='dialog']{animation:scDropIn .2s ease both}"
+            + ".playControls__play{transition:transform .15s ease!important}"
+            + ".playControls__play:active{transform:scale(.92)!important}"
             + "input,textarea{transition:border-color .18s ease,box-shadow .18s ease!important}";
 
-        // Beta Material Design 3 restyle. Rounded shapes, tonal surfaces,
-        // pill buttons. Keeps SoundCloud orange as primary.
-        public const string RedesignCss =
-            ":root{--m3-primary:#ff5500;--m3-on-primary:#fff;--m3-surface:#1b1b1e;--m3-surface2:#242428;--m3-outline:#3a3a40;--m3-radius:18px}"
-            + ".l-container,.l-fixed-top-one-column,.l-fullwidth{max-width:1280px!important}"
-            + "header.header{border-radius:0 0 20px 20px!important}"
-            + ".soundList__item,.trackItem,.searchItem,.chartTrack,.commentItem,.sound__content{background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:var(--m3-radius)!important;padding:12px!important;margin-bottom:10px!important;box-shadow:0 1px 2px rgba(0,0,0,.25)!important}"
-            + ".soundList__item:hover,.trackItem:hover,.searchItem:hover{box-shadow:0 6px 20px rgba(0,0,0,.35)!important;transform:translateY(-1px)}"
-            + "button.sc-button,.button,.playControls__play,.sc-button-medium,.sc-button-large{border-radius:999px!important;font-weight:600!important}"
-            + ".sc-button-primary,.sc-button-cta{background:var(--m3-primary)!important;border-color:var(--m3-primary)!important;color:var(--m3-on-primary)!important}"
-            + ".image__full,.sound__coverArt,.trackItem__image,.visualSound__artwork,.soundBadge__avatar{border-radius:16px!important;overflow:hidden!important}"
-            + ".playControls__bg,.playControls__inner{background:rgba(20,20,23,.92)!important;backdrop-filter:blur(16px)!important;border-radius:20px 20px 0 0!important;border-top:1px solid rgba(255,255,255,.1)!important}"
-            + ".header__navMenu,.dropdownContent,.modal__modal{background:#242428!important;border-radius:20px!important;border:1px solid rgba(255,255,255,.1)!important}"
-            + "input[type=text],input[type=search],.headerSearch__input{background:rgba(255,255,255,.07)!important;border-radius:999px!important;border:1px solid transparent!important}"
-            + "input[type=text]:focus,input[type=search]:focus{border-color:var(--m3-primary)!important}"
-            + ".badgeList,.statsList{border-radius:12px!important}"
-            + "::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:99px;border:2px solid transparent;background-clip:content-box}::-webkit-scrollbar-track{background:transparent}";
+        // Promo killer. Hides "become an author" style upsell banners by
+        // their exact text, so login and signup are never touched.
+        // Runs always, independent of the adblock toggle.
+        public const string PromoJs =
+            "(function(){if(window.__scPromoKiller)return;window.__scPromoKiller=true;"
+            + "var PH=['Uploading tracks just got way easier','Get heard by up to 100 listeners','Now available: Get heard'];"
+            + "function sweep(){try{"
+            + "var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false);"
+            + "var n,found=[];"
+            + "while(n=w.nextNode()){var t=n.nodeValue;if(!t)continue;"
+            + "for(var i=0;i<PH.length;i++){if(t.indexOf(PH[i])>=0){found.push(n);break;}}}"
+            + "for(var k=0;k<found.length;k++){var el=found[k].parentElement,g=0;"
+            + "while(el&&el!==document.body&&g<5){"
+            + "if(el.querySelector&&el.querySelector('input[type=password],input[type=email]'))break;"
+            + "var tag=(el.tagName||'').toLowerCase();"
+            + "if(tag==='div'||tag==='section'||tag==='aside'||tag==='li'){el.style.setProperty('display','none','important');break;}"
+            + "el=el.parentElement;g++;}}"
+            + "}catch(e){}}"
+            + "var t=null;function sch(){if(t)return;t=setTimeout(function(){t=null;sweep();},300);}"
+            + "try{new MutationObserver(sch).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}"
+            + "sweep();setInterval(sweep,3000);})()";
+
+        public const string RdHeader =
+            "header.header{background:#191919!important;border-bottom:1px solid #2a2a2a!important;box-shadow:0 1px 0 rgba(0,0,0,.4)!important}"
+            + ".header__logo{background-size:contain!important}"
+            + ".l-nav,.header__navMenuItem{transition:color .18s ease,box-shadow .18s ease!important}"
+            + ".g-tabs-link.active,.header__navMenuItem.selected{box-shadow:inset 0 -2px 0 #f76b15!important}"
+            + ".profileTabs__link.active,.g-tabs-link.active{color:#eeeeee!important}";
+
+        public const string RdCards =
+            ".l-container,.l-fixed-top-one-column,.l-fullwidth{max-width:1280px!important}"
+            + ".soundList__item,.trackItem,.searchItem,.chartTrack,.sound__content{background:#191919!important;border:1px solid #2a2a2a!important;border-radius:12px!important;padding:12px!important;margin-bottom:10px!important}"
+            + ".soundList__item:hover,.trackItem:hover,.searchItem:hover{border-color:#3a3a3a!important;box-shadow:0 6px 20px rgba(0,0,0,.4)!important;transform:translateY(-1px)}"
+            + ".soundTitle__title{color:#eeeeee!important}"
+            + ".soundTitle__username,.trackItem__username,.soundContext__username{color:#b4b4b4!important}"
+            + ".soundStats,.trackItem__stats,.statsList{color:#b4b4b4!important}"
+            + ".badgeList__item{background:#222222!important;border:1px solid #2a2a2a!important;border-radius:8px!important}";
+
+        public const string RdButtons =
+            "button.sc-button,.button,.sc-button-medium,.sc-button-large{border-radius:999px!important;font-weight:600!important}"
+            + ".sc-button-primary,.sc-button-cta{background:#f76b15!important;border-color:#f76b15!important;color:#fff!important}"
+            + ".sc-button-primary:hover,.sc-button-cta:hover{background:#ff801f!important;border-color:#ff801f!important}"
+            + ".sc-button-secondary,.sc-button-small{background:transparent!important;border:1px solid #3a3a3a!important;color:#eeeeee!important}"
+            + ".sc-button-secondary:hover{border-color:#606060!important}"
+            + ".sc-button-like.liked,.sc-button-repost.reposted{color:#f76b15!important;border-color:#7e451d!important}";
+
+        public const string RdPlayer =
+            ".playControls__bg,.playControls__inner{background:rgba(25,25,25,.94)!important;backdrop-filter:blur(16px)!important;border-top:1px solid #2a2a2a!important}"
+            + ".playControls__elements button,.playControls__inner button{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}"
+            + ".playControls__elements button:hover{border-color:#606060!important}"
+            + ".playControls__play{background:#f76b15!important;border-color:#f76b15!important;color:#fff!important}"
+            + ".playbackTimeline__progress,.playbackTimeline__progressWrapper .progress{background:#f76b15!important}"
+            + ".playbackTimeline__timePassed,.playbackTimeline__duration{color:#b4b4b4!important}"
+            + ".volume__sliderBackground,.volume__sliderWrapper{background:#3a3a3a!important;border-radius:99px!important}"
+            + ".volume button{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}"
+            + ".playbackSoundBadge__title{color:#eeeeee!important}"
+            + ".playbackSoundBadge__lightLink,.playbackSoundBadge__username{color:#b4b4b4!important}"
+            + ".queue__items,.queue{ background:#191919!important;border:1px solid #2a2a2a!important;border-radius:12px!important}"
+            + ".queueItem:hover,.queue__item:hover{background:#222222!important}"
+            + ".queueItem.active,.queue__item.active{background:#331e0b!important;border-radius:8px!important}";
+
+        public const string RdComments =
+            ".commentItem,.comments__item{background:#191919!important;border:1px solid #2a2a2a!important;border-radius:12px!important;padding:10px 12px!important;margin-bottom:8px!important}"
+            + ".commentItem__avatar,.commentItem img,.comments__avatar{border-radius:50%!important}"
+            + ".commentItem__username,.commentItem a{color:#eeeeee!important}"
+            + ".commentItem__timestamp,.commentItem time,.timeAgo{color:#7b7b7b!important}"
+            + ".commentForm__input,.commentForm textarea{background:#222222!important;border:1px solid transparent!important;border-radius:8px!important;color:#eeeeee!important}"
+            + ".commentForm__input:focus,.commentForm textarea:focus{border-color:#f76b15!important;box-shadow:0 0 0 1px #f76b15!important}"
+            + ".commentItem__replyButton{background:transparent!important;border:1px solid #3a3a3a!important;border-radius:999px!important}";
+
+        public const string RdSidebar =
+            ".l-sidebar-right aside,.sidebar,.sideNav{background:transparent!important}"
+            + ".sidebarModule,.sidebarStats,.relatedTracks,.whoToFollow{background:#191919!important;border:1px solid #2a2a2a!important;border-radius:12px!important;padding:12px!important;margin-bottom:12px!important}"
+            + ".sidebarHeader,.sidebarModule h3,.sidebarStats h3{color:#eeeeee!important}"
+            + ".sidebarFooter,.footer,.l-footer{color:#7b7b7b!important}"
+            + ".relatedTrack:hover,.sidebarTrack:hover{background:#222222!important;border-radius:8px!important}"
+            + ".sc-ministats{color:#b4b4b4!important}";
+
+        public const string RdInputs =
+            "input[type=text],input[type=search],input[type=email],input[type=password],.headerSearch__input{background:#222222!important;border:1px solid transparent!important;border-radius:999px!important;color:#eeeeee!important}"
+            + "textarea,select{background:#222222!important;border:1px solid transparent!important;border-radius:8px!important;color:#eeeeee!important}"
+            + "input::placeholder,textarea::placeholder{color:#7b7b7b!important}"
+            + "input:focus,textarea:focus,select:focus{border-color:#f76b15!important;box-shadow:0 0 0 1px #f76b15!important;outline:none!important}"
+            + ".searchTitle{color:#eeeeee!important}"
+            + ".uploadForm input,.uploadForm textarea,.settingsForm input,.settingsForm textarea{border-radius:8px!important}";
+
+        public const string RdPopups =
+            ".modal__modal,.modal,.dialog{background:#222222!important;border:1px solid #2a2a2a!important;border-radius:12px!important;box-shadow:0 20px 60px rgba(0,0,0,.6)!important}"
+            + ".modal__title,.dialog h2,.modal h2{color:#eeeeee!important}"
+            + ".modalBackground,.modal__overlay{background:rgba(0,0,0,.65)!important}"
+            + ".dropdownContent,.header__navMenu,[role='menu'],.contextMenu{background:#222222!important;border:1px solid #2a2a2a!important;border-radius:12px!important;box-shadow:0 12px 32px rgba(0,0,0,.5)!important}"
+            + ".dropdownContent a,.header__navMenu a,[role='menuitem']{border-radius:6px!important}"
+            + ".dropdownContent a:hover,[role='menuitem']:hover{background:#2a2a2a!important}"
+            + ".tooltip,.toast{background:#2a2a2a!important;border:1px solid #3a3a3a!important;border-radius:8px!important;color:#eeeeee!important}";
     }
 }

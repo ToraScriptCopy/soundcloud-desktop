@@ -13,11 +13,7 @@ namespace WpfApp1
             InitializeComponent();
             _main = main;
             ApplyLocPublic();
-            Loaded += delegate
-            {
-                Fx.Fade(this, 220);
-                Fx.SlideUp(this, 220, 12);
-            };
+            Loaded += delegate { Fx.Enter(this); };
         }
         public void ApplyLocPublic()
         {

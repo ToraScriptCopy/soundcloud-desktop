@@ -10,12 +10,12 @@ Go to [Releases](../../releases) and grab the latest.
 
 There are two builds:
 
-- **Classic (WPF)** - `SoundCloudDesktopBeta-Portable-vX.zip`. The main build with a Fluent design shell.
-- **Alternative UI** - `SoundCloudDesktopBeta-Portable-AlternativeUI-vX.zip`. Same engine and features, but the shell and the site theme follow the Radix design system: real Radix colors, dark surfaces, big rounded corners.
+- **Classic (WPF)** - `SoundCloudDesktopBeta-Portable-vX.zip`. The main build with a Fluent design shell. About 3 MB, the lightest one.
+- **Alternative UI** - `SoundCloudDesktopBeta-Portable-AlternativeUI-vX.zip`. A separate build on Electron with a real Radix Themes interface: same features, dark Radix shell, animated windows. Bigger download since it bundles its own Chromium, needs no WebView2.
 
 Both are portable. Unpack wherever you want and run the exe. No install, no admin rights.
 
-You only need [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already.
+The Classic build needs [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703). Win10 and Win11 usually have it already. The Alternative UI build needs nothing, everything is inside the zip.
 
 ## Why it runs lighter than the rest
 
@@ -31,8 +31,9 @@ You only need [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=21247
 - Login sticks. Sign in with Google, Apple or whatever you like, restart, and you are still signed in
 - Separate "Now playing" window. It pops up when a track starts, with cover art, artist, buttons and minimize to tray
 - PiP player for a track or playlist. The button sits at the bottom next to the volume
-- Site animations. Turn on light animations for cards and buttons in settings
-- SoundCloud ReDesign (beta). A Material Design 3 restyle in settings, rounded cards and buttons
+- Site animations. Turn on light animations for cards, popups and buttons in settings
+- SoundCloud ReDesign. A full restyle of every part of the site: cards, buttons, header, bottom player, comments, sidebar, inputs, popups. Each part has its own toggle in the ReDesign options window, text colors stay as they are
+- Become-an-author promo banners are removed automatically, always, without touching login or signup
 - Extensions. Pick a folder with an unpacked Chrome extension in settings and it gets loaded
 - Ad blocking. Off by default, single toggle. Login and signup windows are never touched
 - Numpad hotkeys (1/2/3 tracks, 4/5 volume), everything is rebindable

@@ -17,7 +17,7 @@ namespace WpfApp1
             RefreshFromState();
             ApplyLoc();
             _initialized = true;
-            Loaded += delegate { Fx.Fade(this, 200); };
+            Loaded += delegate { Fx.Enter(this); };
         }
         private void RefreshFromState()
         {
@@ -103,6 +103,7 @@ namespace WpfApp1
             AdBlockSwitch.Content = Loc.Get("AdBlockLbl");
             SiteAnimsSwitch.Content = Loc.Get("SiteAnims");
             ReDesignSwitch.Content = Loc.Get("ReDesign");
+            RdOpenBtn.Content = Loc.Get("RdOpen");
             PlayerPopupSwitch.Content = Loc.Get("PlayerPopup");
             ExtHeader.Text = Loc.Get("ExtGroup");
             ExtAddBtn.Content = Loc.Get("ExtAdd");
@@ -188,6 +189,16 @@ namespace WpfApp1
             if (!_initialized) return;
             _state.PlayerPopup = PlayerPopupSwitch.IsChecked == true;
             _owner.SaveAllState();
+        }
+        private void RdOpenBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var w = new RedesignWindow(_owner);
+                w.Owner = this;
+                w.Show();
+            }
+            catch { }
         }
         private async void ExtAddBtn_Click(object sender, RoutedEventArgs e)
         {

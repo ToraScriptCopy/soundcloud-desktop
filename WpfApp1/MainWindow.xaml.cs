@@ -86,6 +86,15 @@ namespace WpfApp1
             InitializeComponent();
             bool tampered;
             _state = SecureStore.Load(out tampered);
+            // Migrate old vaults: the redesign used to be one toggle,
+            // now it is flags. If it was on, turn every part on.
+            if (_state.ReDesign && !(_state.RdCards || _state.RdButtons || _state.RdHeader
+                || _state.RdPlayer || _state.RdComments || _state.RdSidebar
+                || _state.RdInputs || _state.RdPopups))
+            {
+                _state.RdCards = _state.RdButtons = _state.RdHeader = _state.RdPlayer =
+                    _state.RdComments = _state.RdSidebar = _state.RdInputs = _state.RdPopups = true;
+            }
             Loc.Current = Loc.Resolve(_state.Lang);
             _snackbar = new SnackbarService();
             _snackbar.SetSnackbarPresenter(SnackbarPresenter);
@@ -135,9 +144,14 @@ namespace WpfApp1
         }
         private void AnimateSidebar()
         {
-            // Instant toggle plus fade: smooth and never lags WebView2.
+            // Instant toggle plus slide and fade on the sidebar itself.
+            // WebView2 is not inside, so it stays smooth.
             ApplySidebar();
-            if (_state.SidebarOpen) Fx.Fade(SidebarView, 180);
+            if (_state.SidebarOpen)
+            {
+                Fx.Fade(SidebarView, 180);
+                Fx.SlideX(SidebarView, 200, -18);
+            }
         }
         public void ApplyLocPublic() { ApplyLoc(); }
         private void ApplyLoc()
@@ -464,13 +478,14 @@ namespace WpfApp1
             if (!_initialized) return;
             UpdateNavButtons();
             await RunJs(SiteCssJs());
+            FireJs(SiteExtras.PromoJs);
             await UpdateTitleAsync();
             _lastSentVol = -1;
             await ApplyVolumeAsync();
         }
         private string SiteCssJs()
         {
-            string css = SiteExtras.BuildCss(_state.HideHeader, _state.SiteAnims, _state.ReDesign, AdBlock.Enabled);
+            string css = SiteExtras.BuildCss(_state, AdBlock.Enabled);
             return SiteExtras.ToJs(css);
         }
         private void UpdateNavButtons()

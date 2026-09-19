@@ -24,6 +24,14 @@ namespace WpfApp1
         [DataMember] public bool AdBlockOn { get; set; }
         [DataMember] public bool SiteAnims { get; set; }
         [DataMember] public bool ReDesign { get; set; }
+        [DataMember] public bool RdCards { get; set; }
+        [DataMember] public bool RdButtons { get; set; }
+        [DataMember] public bool RdHeader { get; set; }
+        [DataMember] public bool RdPlayer { get; set; }
+        [DataMember] public bool RdComments { get; set; }
+        [DataMember] public bool RdSidebar { get; set; }
+        [DataMember] public bool RdInputs { get; set; }
+        [DataMember] public bool RdPopups { get; set; }
         [DataMember] public bool PlayerPopup { get; set; }
         [DataMember] public List<string> Extensions { get; set; }
         [DataMember] public int HotPrev { get; set; }
@@ -47,6 +55,14 @@ namespace WpfApp1
             AdBlockOn = false;
             SiteAnims = false;
             ReDesign = false;
+            RdCards = true;
+            RdButtons = true;
+            RdHeader = true;
+            RdPlayer = true;
+            RdComments = true;
+            RdSidebar = true;
+            RdInputs = true;
+            RdPopups = true;
             PlayerPopup = true;
             Extensions = new List<string>();
             HotPrev = 0x61;
